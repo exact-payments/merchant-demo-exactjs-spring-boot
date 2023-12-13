@@ -13,6 +13,7 @@ https://developer.exactpay.com/docs/Payment-Forms
 ## Prerequisites
 
 - Java version 17
+- Suitable version of Maven for building and running the application
 
 ## Steps to use the demo app
 - Clone the repository
@@ -35,3 +36,21 @@ http://localhost:8080
 ```
 You will see the home page of a eCommerce website. Add the products to the
 shopping cart and checkout.
+
+## Details of ExactJS Integration
+
+The integration of ExactJS library involves HTML/JavaScript frontend
+changes as well a backend changes in your Spring Boot application. The following steps
+outline how these changes are implemented in this sample application.
+
+### 1. Home Page of the eCommerce site
+
+HomeController.java 
+
+This is a Spring MVC controller class to deliver the home page of the sample eCommerce
+merchant page.
+
+CheckoutController.java
+
+This is the Spring MVC controller class that loads the pay.html page. 
+
