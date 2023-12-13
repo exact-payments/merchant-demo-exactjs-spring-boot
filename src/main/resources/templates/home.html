@@ -1,0 +1,103 @@
+<!Doctype html>
+<html>
+<head>
+    <title>Home</title>
+    <script src="https://api.exactpaysandbox.com/js/v1/exact.js"></script>
+    <script  th:inline="javascript">
+        function greetWorld() {
+            alert("hello world")
+        }
+
+        function salute() {
+
+            alert("Calling addCardElements function...");
+           // const exact = ExactJS("anxR5MoINvz3JO5e");
+           // const components = exact.components({orderId: "4e7eea17-7199-4d14-832a-386a729879b2");
+           // components.addCard('cardElement');
+        }
+    </script>
+</head>
+
+<body th:onload="salute()">
+<h1>Welcome to Plant Shop!</h1>
+
+<div style="display: flex; justify-content: center; align-items: center">
+
+<form id="myForm" action="your_form_url" method="post">
+
+    <div>
+        <label for="email-address">Email address</label>
+        <input type="email" id="email-address" name="email-address" autocomplete="email">
+    </div>
+    <div id="cardElement">
+        <!-- our credit card UI component will be attached here -->
+    </div>
+    <div>
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" autocomplete="street-address">
+    </div>
+    <div>
+        <label for="apartment">Apartment, suite, etc.</label>
+        <input type="text" id="apartment" name="apartment">
+    </div>
+
+    <div>
+        <label for="city">City</label>
+        <input type="text" id="city" name="city">
+    </div>
+
+    <div>
+        <label for="province">Province</label>
+        <input type="text" id="province" name="province">
+    </div>
+
+    <div>
+        <label for="postal-code">Postal code</label>
+        <input type="text" id="postal-code" name="postal-code" autocomplete="postal-code">
+    </div>
+
+    <!-- INSERT RESPONSE ITEMS HERE -->
+
+    <div>
+        <input type="submit" name="commit" value="Pay Now" data-disable-with="Pay Now">
+    </div>
+</form>
+</div>
+</body>
+
+<script>
+    const exact = ExactJS({token:'1VaZaV52rejsDcvx'});
+    const components = exact.components({orderId: 'aeae29f4-d5e3-486f-b75f-c975fc35878f'});
+    //const components = exact.components();
+    components.addCard('cardElement', {
+        billingAddress: {
+            type: "full"
+        },
+        style: {
+            default: {
+                backgroundColor: "white",
+                padding: "3px"
+            },
+            error: {
+                backgroundColor: "blue",
+                border: "2px dashed deeppink",
+                borderRadius: "10px"
+            }
+        }
+    });
+
+    document.getElementById("myForm").addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const form = event.target.closest("form");
+        exact.payOrder()
+            .then(payment_id => {
+                // add the payment id to your form
+                document.getElementById('payment_id').value = payment_id
+                // submit your form to your backend
+                form.submit()
+            })
+            .catch(err => console.error(err));
+    });
+</script>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+
+    <script>
+        let total = 0;
+        function updateTotal(clicked) {
+            console.log('card clicked: '+clicked);
+            console.log('updating the total')
+            var amountElement = document.getElementById("amount");
+            var amount = amountElement.textContent || amountElement.innerText;
+            console.log(amount);
+            var index = amount.indexOf("$");
+            var amountStr = amount.substring(index+1);
+            console.log(amountStr);
+            var priceStr = '';
+            let itemNumber = clicked.substring(6);
+         //   alert(itemNumber);
+            var priceElement = document.getElementById("item"+itemNumber);
+            priceStr = priceElement.textContent || priceElement.innerText;
+            console.log('Price Str: '+priceStr);
+            var price = priceStr.substring(1);
+            console.log('Price: '+price);
+             total += parseInt(price);
+            amountElement.innerHTML = "Your Order Total: $" + total;
+        }
+
+        async function pay() {
+            var amountElement = document.getElementById("amount");
+            var amount = amountElement.textContent || amountElement.innerText;
+            console.log(amount);
+            var index = amount.indexOf("$");
+            var amountStr = amount.substring(index+1);
+            console.log(amountStr);
+            let orderAmount = parseInt(amountStr)*100;
+            window.location = "/checkout?amountStr="+orderAmount;
+        }
+    </script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body,html {
+            padding: 0;
+            margin: 0;
+            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif
+        }
+        .Home-Container {
+            width: 100%;
+        }
+        .Main-Container {
+            width: 80%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .product-list-container {
+            width: 80%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            margin: auto;
+            text-align: center;
+            font-family: arial;
+            box-sizing: border-box;
+        }
+
+        .card img {
+            max-width: 100%;
+        }
+
+        .price {
+            color: grey;
+            font-size: 22px;
+        }
+
+        .card button {
+            border: none;
+            outline: 0;
+            padding: 12px;
+            color: white;
+            background-color: #000;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+        }
+
+        .card button:hover {
+            opacity: 0.7;
+        }
+
+        .Cart-Container{
+            width: 20%;
+            height: 85%;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0px 25px 40px #1687d933;
+        }
+
+        .Cart-Container button {
+            border: none;
+            outline: 0;
+            padding: 12px;
+            color: white;
+            background-color: #000;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+        }
+
+        title {
+            height: 60px;
+            border-bottom: 1px solid #E1E8EE;
+            padding: 20px 30px;
+            color: #5E6977;
+            font-size: 18px;
+            font-weight: 400;
+        }
+    </style>
+
+</head>
+<body>
+<div class="Home-Container">
+    <div>
+        <h1>Welcome to the Exact Payments Plant Shop</h1>
+    </div>
+<div class="Main-Container">
+<div class="product-list-container">
+    <div class="card">
+        <img src="01.jpg" alt="Plant 1" style="width:100%">
+        <p class="price" id="item1">$1</p>
+        <p><button id="button1" onclick="updateTotal(this.id)">Add to Cart</button></p>
+    </div>
+    <div class="card">
+        <img src="02.jpg" alt="Plant 2" style="width:100%">
+        <p class="price" id="item2">$2</p>
+        <p><button id="button2" onclick="updateTotal(this.id)">Add to Cart</button></p>
+    </div>
+    <div class="card">
+        <img src="03.jpg" alt="Plant 3" style="width:100%">
+        <p class="price" id="item3">$3</p>
+        <p><button id="button3" onclick="updateTotal(this.id)">Add to Cart</button></p>
+    </div>
+    <div class="card">
+        <img src="04.jpg" alt="Plant 4" style="width:100%">
+        <p class="price" id="item4">$4</p>
+        <p><button id="button4" onclick="updateTotal(this.id)">Add to Cart</button></p>
+    </div>
+    <div class="card">
+        <img src="05.jpg" alt="Plant 5" style="width:100%">
+        <p class="price" id="item5">$5</p>
+        <p><button id="button5" onclick="updateTotal(this.id)">Add to Cart</button></p>
+    </div>
+    <div class="card">
+        <img src="06.jpg" alt="Plant 6" style="width:100%">
+        <p class="price" id="item6">$6</p>
+        <p><button id="button6" onclick="updateTotal(this.id)">Add to Cart</button></p>
+    </div>
+</div>
+<div class="Cart-Container">
+    <div class="title">
+        <h1>Your Cart</h1>
+    </div>
+    <div class="title">
+        <h3 id="amount">Your Order Total: $0</h3>
+    </div>
+
+    <p><button onclick="pay()">Checkout</button></p>
+</div>
+</div>
+</div>
+</body>
+
+
+</html>
