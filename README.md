@@ -1,14 +1,14 @@
-# Demo Spring Boot Application for ExactJS
+# Demo Spring Boot Application for CSIPayJS
 
 ## Overview
 
-ExactJS is client-side JavaScript library that can be used with eCommerce merchant web applications
+CSIPayJS is client-side JavaScript library that can be used with eCommerce merchant web applications
 to accept online payments from customers without the PCI compliance requirements. This is 
 an implementation of a Java Spring Boot application that is common
 among many eCommerce websites on how to integrate ExactJS.
 
 More information about ExactJS can be found in the following guide:
-https://developer.exactpay.com/docs/Payment-Forms
+https://csipay-pyxis.readme.io/reference/getting-started-1
 
 ## Prerequisites
 
@@ -48,9 +48,8 @@ outline how these changes are implemented in this sample application.
 
 Please review the contents of the `application.properties` file in the `src/main/resources`
 directory. This file contains the following properties:
-- `exact.url` - This is the Exact Payments API URL
-- `application.token` - This is the identity and authorization token with the necessary permissions to use ExactJS. The application token must have at least `charges.create` and `charges.read` permissions.
-- `account.id` - This is the merchant account ID for a specific merchant.
+- `csipay.url` - This is the Pyxis API URL
+- `security.token` - This is the identity and authorization token with the necessary permissions to use Pyxis API.
 ### 1. Home Page of the eCommerce site
 
 _HomeController.java_ 
@@ -79,7 +78,7 @@ The business logic coded in this controller is as follows:
 First create an Order for the total sale amount coming in as the request parameter `amountStr`.
 This class makes a POST request to the endpoint:
 ```agsl
-https://api.exactpaysandbox.com/account/{accountId}/orders
+https://test-pyxisapi.csipay.com/PyxisMasterApi/api/orders
 ```
 Please note that the URI contains the `accountID` in the URI path. This
 implies that this call is made from the partner context with you as a 
@@ -103,7 +102,7 @@ At the top of the page you will see the following JavaScript link included
 that is essential to initialize your payment page to work with ExactJS in a 
 way that does removes your PCI compliance overhead.
 ```
-<script src="https://api.exactpaysandbox.com/js/v1/exact.js"></script>
+<script src="https://test-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
  ```
 
 Notice that, in the body of the `pay.html` page you have a HTML snippet:
@@ -124,7 +123,7 @@ the following JavaScript code snippet:
     const exact = ExactJS([[${accesstoken}]]);
     const components = exact.components({orderId: [[${orderid}]]});
 
-    components.addCard('cardElement', {
+    components.addComponent('cardElement', 'full-card', {
         billingAddress: {
             type: "full"
         },

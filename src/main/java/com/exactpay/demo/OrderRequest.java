@@ -2,27 +2,36 @@ package com.exactpay.demo;
 
 public class OrderRequest {
 
-    private int amount;
-    private Reference reference;
+    private int totalAmount;
+    private String terminalId;
+    private String paymentFlow;
 
-    public int getAmount() {
-        return amount;
+    public int getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setAmount(int amount) {
-        this.amount = amount;
+    public void setTotalAmount(int amount) {
+        this.totalAmount = totalAmount;
     }
 
-    public Reference getReference() {
-        return reference;
+    public String getTerminalId() {
+        return terminalId;
     }
 
-    public void setReference(Reference reference) {
-        this.reference = reference;
+    public void setTerminalId(String terminalId) {
+        this.terminalId = terminalId;
     }
 
-    public OrderRequest(int amount, Reference reference) {
-        this.amount = amount;
-        this.reference = reference;
+    public String getPaymentFlow() {
+        return paymentFlow;
+    }
+
+    public void setPaymentFlow(String paymentFlow) {
+        this.paymentFlow = paymentFlow;
+    }
+    public OrderRequest(int totalAmount,String terminalId, String paymentFlow) {
+        this.totalAmount = totalAmount;
+        this.paymentFlow = paymentFlow;
+        this.terminalId = terminalId;
     }
 }

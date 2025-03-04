@@ -2,11 +2,11 @@ package com.exactpay.demo;
 
 public class Order {
 
-    private String id;
+    private String orderId;
     private AccessToken accessToken;
 
-    public String getId() {
-        return id;
+    public String getOrderId() {
+        return orderId;
     }
 
     public AccessToken getAccessToken() {
@@ -17,7 +17,7 @@ public class Order {
         this.accessToken = accessToken;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setOrderId(String id) {
+        this.orderId = id;
     }
 }

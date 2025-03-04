@@ -3,94 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <title>Pay your Order</title>
-    <script src="https://api.exactpaysandbox.com/js/v1/exact.js"></script>
+    <script src="https://test-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+            padding: 20px;
+        }
+
+        .payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0px 25px 40px #1687d933;
+        }
+
+        .header-text {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #5E6977;
+        }
+
+        .demo-notice {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .demo-subtitle {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .test-cards-link {
+            color: #7ac833;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+
+        .test-cards-link:hover {
+            color: #5ea023;
+        }
+
+        .order-total {
+            font-size: 20px;
+            margin: 20px 0;
+        }
+
+        .payment-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5E6977;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #cardElement {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: #333;
+        }
+    </style>
 </head>
 <body>
-<div>
-    <div>
-        <h1 style="text-align: center">Demonstration Only.</h1>
-        <h2 style="text-align: center">Payments are simulated and no actual funds are transferred.</h2>
-        <h2 style="text-align: center; color: #7ac833;">
-            <a href="https://developer.exactpay.com/docs/Sandbox-Test-Cards">TEST CARDS</a>
-        </h2>
-        <p style="text-align: center"> Your Order total is: <strong th:text="${amount}"></strong></p>
+    <div class="payment-container">
+        <div class="header-text">
+            <h1 class="demo-notice">Demonstration Only</h1>
+            <h2 class="demo-subtitle">Payments are simulated and no actual funds are transferred.</h2>
+            <h2>
+                <a href="https://csipay-pyxis.readme.io/reference/testing-api-calls" class="test-cards-link">TEST CARDS</a>
+            </h2>
+            <p class="order-total">Your Order total is: <strong th:text="${amount}"></strong></p>
+        </div>
+
+        <form id="myForm" action="your_form_url" method="post" class="payment-form">
+            <div class="form-group">
+                <label for="email-address">Email address</label>
+                <input type="email" id="email-address" name="email-address" autocomplete="email">
+            </div>
+            
+            <div id="cardElement">
+                <!-- credit card UI component will be attached here -->
+            </div>
+
+            <input type="hidden" name="payment_id" id="payment_id">
+
+            <div>
+                <input type="submit" name="commit" value="Pay Now" class="submit-button">
+            </div>
+        </form>
     </div>
-    <div style="display: flex; justify-content: center; align-items: center; min-width: 500px">
-    <form id="myForm" action="your_form_url" method="post">
-        <div>
-            <label for="email-address">Email address</label>
-            <input type="email" id="email-address" name="email-address" autocomplete="email">
-        </div>
-        <div id="cardElement">
-            <!-- our credit card UI component will be attached here -->
-        </div>
 
-        <input type="hidden" name="payment_id" id="payment_id">
+    <script th:inline="javascript">
 
-        <div>
-            <input type="submit" name="commit" value="Pay Now" data-disable-with="Pay Now">
-        </div>
-    </form>
-    </div>
-</div>
-</body>
-<script th:inline="javascript">
+        const exact = CSIPayJS([[${accesstoken}]]);
+        const components = exact.components({orderId: [[${orderid}]]});
 
-    const exact = ExactJS([[${accesstoken}]]);
-    const components = exact.components({orderId: [[${orderid}]]});
-
-    components.addCard('cardElement', {
-        billingAddress: {
-            type: "full"
-        },
-        style: {
-            default: {
-                backgroundColor: "white",
-                padding: "3px"
+        components.addComponent('cardElement', 'full-card', {
+            billingAddress: {
+                type: "full"
             },
-            error: {
-                backgroundColor: "blue",
-                border: "2px dashed deeppink",
-                borderRadius: "10px"
+            style: {
+                default: {
+                    backgroundColor: "white",
+                    padding: "3px"
+                },
+                error: {
+                    backgroundColor: "blue",
+                    border: "2px dashed deeppink",
+                    borderRadius: "10px"
+                }
             }
-        }
-    });
-
-    document.getElementById("myForm").addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        const form = event.target.closest("form");
-        exact.payOrder()
-            .then(payment_id => {
-                // add the payment id to your form
-                document.getElementById('payment_id').value = payment_id
-                // submit your form to your backend
-                form.submit()
-            })
-            .catch(err => console.error(err));
-    });
-
-    exact.on("payment-complete", (payload) => {
-        // add the payment id to your form
-        document.getElementById('payment_id').value = payload.paymentId;
-       // alert('Payment Id: '+payload.paymentId);
-        // submit your form to your backend
-
-        window.location = "/confirm?paymentId="+payload.paymentId;
-    });
-
-    exact.on("payment-failed", (payload) => {
-        const errorElem = document.getElementById("errors");
-        Array.from(payload).forEach(err => {
-            const pElem = document.createElement("p");
-            pElem.textContent = err;
-            errorElem.append(pElem);
         });
-        errorElem.classList.remove("hidden");
-    });
 
-</script>
+        document.getElementById("myForm").addEventListener('submit', (event) => {
+            event.preventDefault();
 
+            const form = event.target.closest("form");
+            exact.processOrder()
+                .then(payment_id => {
+                    // add the payment id to your form
+                    document.getElementById('payment_id').value = payment_id
+                    // submit your form to your backend
+                    form.submit()
+                })
+                .catch(err => console.error(err));
+        });
+
+        exact.on("payment-complete", (payload) => {
+            // add the payment id to your form
+            document.getElementById('payment_id').value = payload.paymentId;
+           // alert('Payment Id: '+payload.paymentId);
+            // submit your form to your backend
+
+            window.location = "/confirm?paymentId="+payload.paymentId;
+        });
+
+        exact.on("payment-failed", (payload) => {
+            const errorElem = document.getElementById("errors");
+            Array.from(payload.messages).forEach(err => {
+                const pElem = document.createElement("p");
+                pElem.textContent = err;
+                errorElem.append(pElem);
+            });
+            errorElem.classList.remove("hidden");
+        });
+
+    </script>
+</body>
 </html>

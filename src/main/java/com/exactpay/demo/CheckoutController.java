@@ -5,55 +5,54 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import java.util.UUID;
 
 @Controller
 public class CheckoutController {
 
-    @Value("${exact.url}")
-    private String exactpayURL;
+    @Value("${csipay.url}")
+    private String csipayURL;
 
-    @Value("${application.token}")
-    private String appToken;
+    @Value("${security.token}")
+    private String securityToken;
 
-    @Value("${account.id}")
-    private String accountId;
+    @Value("${account.terminalId}")
+    private String terminalId;
+
+    @Value("${account.paymentFlow}")
+    private String paymentFlow;
 
     @GetMapping("/checkout")
     public String doCheckout(Model model, @RequestParam String amountStr) {
         System.out.println("Order amount: "+amountStr);
-        UUID uuid = UUID.randomUUID();
-        String referenceNo = uuid.toString();
+        System.out.println("Terminal Id: "+terminalId);
+        System.out.println("Payment Flow: "+paymentFlow);;
 
         int amount = Integer.parseInt(amountStr);
-        Reference reference = new Reference(referenceNo);
-
-        OrderRequest orderRequest = new OrderRequest(amount, reference);
+        
+        OrderRequest orderRequest = new OrderRequest(amount, terminalId, paymentFlow);
         System.out.println(orderRequest.toString());
-        System.out.println("Token: "+appToken);
-        String url = "https://api.exactpaysandbox.com/account/"+accountId+"/orders";
+        String url = csipayURL+"orders";
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", appToken);
+        headers.set("Authorization", "Bearer "+securityToken);
         headers.set("Accept", "application/json");
         headers.set("Content-Type", "application/json");
 
         HttpEntity<OrderRequest> request = new HttpEntity<OrderRequest>(orderRequest, headers);
+        System.out.println("Request Body:"+request.getBody().getPaymentFlow());
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Order> response = restTemplate.postForEntity(url,request,Order.class);
-        System.out.println(response.getStatusCode());
+        System.out.println("Status Code: "+response.getStatusCode());
+        System.out.println("Response Body:"+response.getBody().toString());
         Order order = response.getBody();
         String accessToken = order.getAccessToken().getToken();
         System.out.println("access token: "+accessToken);
-        System.out.println("Order id: "+order.getId());
-        model.addAttribute("orderid",order.getId());
+        System.out.println("Order id: "+order.getOrderId());
+        model.addAttribute("orderid",order.getOrderId());
         model.addAttribute("accesstoken", accessToken);
         model.addAttribute("amount","$"+Integer.parseInt(amountStr)/100);
         return "pay";
