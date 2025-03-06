@@ -3,9 +3,8 @@
 ## Overview
 
 CSIPayJS is client-side JavaScript library that can be used with eCommerce merchant web applications
-to accept online payments from customers without the PCI compliance requirements. This is 
-an implementation of a Java Spring Boot application that is common
-among many eCommerce websites on how to integrate ExactJS.
+to accept online payments from customers without the PCI compliance requirements. This implementation of a Java Spring Boot application that is common
+among many eCommerce websites and shows how to integrate CSIPayJS.
 
 More information about ExactJS can be found in the following guide:
 https://csipay-pyxis.readme.io/reference/getting-started-1
@@ -40,15 +39,15 @@ http://localhost:8080
 You will see the home page of a eCommerce website. Add the products to the
 shopping cart and checkout.
 
-## Details of ExactJS Integration
+## Details of CSIPayJS Integration
 
-The integration of ExactJS library involves HTML/JavaScript frontend
+The integration of CSIPayJS library involves HTML/JavaScript frontend
 changes as well a backend changes in your Spring Boot application. The following steps
 outline how these changes are implemented in this sample application. 
 
 Please review the contents of the `application.properties` file in the `src/main/resources`
 directory. This file contains the following properties:
-- `csipay.url` - This is the Pyxis API URL
+- `csipay.url` - This is the Pyxis API URL from Constellation Payments Platform
 - `security.token` - This is the identity and authorization token with the necessary permissions to use Pyxis API.
 ### 1. Home Page of the eCommerce site
 
@@ -67,9 +66,9 @@ shopper adding items to their shopping cart and calculating the total amount
 before checkout. The `pay()` is the JavaScript code that POSTs to the
 `CheckoutController` that renders the payment page powered by ExactJS.
 
-### 3. Rendering the payment form with ExactJS
+### 3. Rendering the payment form with CSIPayJS
 
-The HTML code required for rendering the ExactJS powered payment page is in the `pay.html` file.
+The HTML code required for rendering the CSIPayJS powered payment page is in the `pay.html` file.
 The loading of this page is controlled by the Sprint Boot backend controller
 `CheckoutController.java.`
 
@@ -80,10 +79,8 @@ This class makes a POST request to the endpoint:
 ```agsl
 https://test-pyxisapi.csipay.com/PyxisMasterApi/api/orders
 ```
-Please note that the URI contains the `accountID` in the URI path. This
-implies that this call is made from the partner context with you as a 
-software platform partner to Exact Payments by explicitly specifying the merchant
-account ID of your customer. The response to this call will fetch two important
+
+The response to this call will fetch two important
 data that is required to be passed on your payment page. The first one is the
 `accessToken` which is required to securely initialize the ExactJS component
 in the payment form (`pay.html` in this sample application). The second one is the
@@ -115,13 +112,13 @@ from the model attributes we set in the Spring Controller backend should be
 fairly self-explanatory. For more information on this, please refer to the Thymeleaf templating engine documentation. 
 ```https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html```
 
-The most important part of building the payment page with the help of ExactJS
+The most important part of building the payment page with the help of CSIPayJS
 is to embed a few lines of JavaScript code into your HTML page. Take a look at the
 the following JavaScript code snippet:
 ```<script th:inline="javascript">
 
-    const exact = ExactJS([[${accesstoken}]]);
-    const components = exact.components({orderId: [[${orderid}]]});
+    const csipay = CSIPayJS([[${accesstoken}]]);
+    const components = csipay.components({orderId: [[${orderid}]]});
 
     components.addComponent('cardElement', 'full-card', {
         billingAddress: {
@@ -165,7 +162,7 @@ document.getElementById("myForm").addEventListener('submit', (event) => {
         event.preventDefault();
 
         const form = event.target.closest("form");
-        exact.payOrder()
+        csipay.payOrder()
             .then(payment_id => {
                 // add the payment id to your form
                 document.getElementById('payment_id').value = payment_id
@@ -181,7 +178,7 @@ post-payment flows such as generating a confirmation page.
 
 ### 6. Generating confirmation page
 
-ExactJS generates Javascript events such as `payment-completed` and `payment-failed`
+CSIPayJS generates Javascript events such as `payment-completed` and `payment-failed`
 for the application to handle and communicate to the user the state of the
 payment. For example, as shown in the JavaScript code below, the payment-completed
 event handler can call an endpoint to show a confirmation page. In this sample application
