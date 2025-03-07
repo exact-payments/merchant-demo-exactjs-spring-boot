@@ -6,7 +6,7 @@ CSIPayJS is client-side JavaScript library that can be used with eCommerce merch
 to accept online payments from customers without the PCI compliance requirements. This implementation of a Java Spring Boot application that is common
 among many eCommerce websites and shows how to integrate CSIPayJS.
 
-More information about ExactJS can be found in the following guide:
+More information about CSIPayJS can be found in the following guide:
 https://csipay-pyxis.readme.io/reference/getting-started-1
 
 ## Prerequisites
@@ -64,7 +64,7 @@ in this page are the  two JavaScript functions: `updateTotal()` and `pay()`.
 The `updateTotal()` is a simple Javascript code to capture the events of the
 shopper adding items to their shopping cart and calculating the total amount
 before checkout. The `pay()` is the JavaScript code that POSTs to the
-`CheckoutController` that renders the payment page powered by ExactJS.
+`CheckoutController` that renders the payment page powered by CSIPayJS.
 
 ### 3. Rendering the payment form with CSIPayJS
 
@@ -82,7 +82,7 @@ https://test-pyxisapi.csipay.com/PyxisMasterApi/api/orders
 
 The response to this call will fetch two important
 data that is required to be passed on your payment page. The first one is the
-`accessToken` which is required to securely initialize the ExactJS component
+`accessToken` which is required to securely initialize the CSIPayJS component
 in the payment form (`pay.html` in this sample application). The second one is the
 `orderID` which represents the payment intent of the eCommerce customer in
 fulfilling their shopping order.
@@ -96,7 +96,7 @@ on the payment form page next.
 
 Please start with the `pay.html` page included in this project.
 At the top of the page you will see the following JavaScript link included 
-that is essential to initialize your payment page to work with ExactJS in a 
+that is essential to initialize your payment page to work with CSIPayJS in a 
 way that does removes your PCI compliance overhead.
 ```
 <script src="https://test-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
