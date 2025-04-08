@@ -54,7 +54,7 @@ public class CheckoutController {
         System.out.println("Order id: "+order.getOrderId());
         model.addAttribute("orderid",order.getOrderId());
         model.addAttribute("accesstoken", accessToken);
-        model.addAttribute("amount","$"+Integer.parseInt(amountStr)/100);
+        model.addAttribute("totalAmount","$"+Integer.parseInt(amountStr)/100);
         return "pay";
     }
 
