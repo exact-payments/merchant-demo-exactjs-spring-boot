@@ -6,6 +6,9 @@
     <script src="https://staging-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- reCAPTCHA script is loaded only if enableRecaptcha is true -->
+    <script th:if="${enableRecaptcha != null && enableRecaptcha}" th:src="'https://www.recaptcha.net/recaptcha/api.js?render=' + ${recaptchaSiteKey}"></script>
+    
     <style>
         body {
             background-color: #f5f5f5;
@@ -101,6 +104,20 @@
         .submit-button:hover {
             background-color: #333;
         }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .processing-message {
+            color: #007bff;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -109,9 +126,9 @@
             <h1 class="demo-notice">Demonstration Only</h1>
             <h2 class="demo-subtitle">Payments are simulated and no actual funds are transferred.</h2>
             <h2>
-                <a href="https://csipay-pyxis.readme.io/reference/testing-api-calls" class="test-cards-link">TEST CARDS</a>
+                <a href="https://developer.exactpay.com/docs/Sandbox-Test-Cards" class="test-cards-link">TEST CARDS</a>
             </h2>
-            <p class="order-total">Your Order total is: <strong th:text="${totalAmount}"></strong></p>
+            <p class="order-total">Your Order total is: <strong th:text="${amount}"></strong></p>
         </div>
 
         <form id="myForm" action="your_form_url" method="post" class="payment-form">
@@ -125,6 +142,15 @@
             </div>
 
             <input type="hidden" name="payment_id" id="payment_id">
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+            
+            <div class="error-message" id="recaptcha-error">
+                Security verification failed. Please try again.
+            </div>
+
+            <div id="processing-message" class="processing-message">
+                Processing your payment...
+            </div>
 
             <div>
                 <input type="submit" name="commit" value="Pay Now" class="submit-button">
@@ -133,10 +159,17 @@
     </div>
 
     <script th:inline="javascript">
-
-        const exact = CSIPayJS([[${accesstoken}]]);
-        const components = exact.components({orderId: [[${orderid}]]});
-
+        // Safely access Thymeleaf variables
+        var accessToken = /*[[${accesstoken}]]*/ '';
+        var orderId = /*[[${orderid}]]*/ '';
+        var enableRecaptcha = /*[[${enableRecaptcha}]]*/ false;
+        var recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ '';
+        
+        // Initialize payment component
+        const exact = CSIPayJS(accessToken);
+        const components = exact.components({orderId: orderId});
+        
+        // Setup card element
         components.addComponent('cardElement', 'full-card', {
             billingAddress: {
                 type: "full"
@@ -144,49 +177,136 @@
             style: {
                 default: {
                     backgroundColor: "white",
-                    padding: "3px"
+                    padding: "12px",
+                    borderRadius: "4px",
+                    fontSize: "16px"
                 },
                 error: {
-                    backgroundColor: "blue",
-                    border: "2px dashed deeppink",
-                    borderRadius: "10px"
+                    backgroundColor: "#fff0f0",
+                    border: "1px solid #ff5555",
+                    borderRadius: "4px"
                 }
             }
         });
 
-        document.getElementById("myForm").addEventListener('submit', (event) => {
+        // Form submission handler
+        document.getElementById("myForm").addEventListener('submit', function(event) {
             event.preventDefault();
-
-            const form = event.target.closest("form");
+            
+            const form = this;
+            const submitButton = form.querySelector('.submit-button');
+            const processingMessage = document.getElementById('processing-message');
+            
+            // Disable button and show processing message
+            submitButton.disabled = true;
+            processingMessage.style.display = 'block';
+            
+            // Check if reCAPTCHA is enabled
+            if (enableRecaptcha && typeof grecaptcha !== 'undefined') {
+                // Execute reCAPTCHA
+                try {
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute(recaptchaSiteKey, {action: 'payment_submit'})
+                            .then(function(token) {
+                                document.getElementById('g-recaptcha-response').value = token;
+                                
+                                // Send token to backend for verification
+                                fetch('/verify-recaptcha', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ token: token }),
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        processPayment(form);
+                                    } else {
+                                        // For demo purposes, proceed anyway
+                                        processPayment(form);
+                                        
+                                        // Uncomment for production to enforce verification
+                                        /*
+                                        document.getElementById('recaptcha-error').style.display = 'block';
+                                        submitButton.disabled = false;
+                                        processingMessage.style.display = 'none';
+                                        */
+                                    }
+                                })
+                                .catch(error => {
+                                    // For demo, proceed anyway
+                                    processPayment(form);
+                                    
+                                    // Uncomment for production
+                                    /*
+                                    document.getElementById('recaptcha-error').style.display = 'block';
+                                    submitButton.disabled = false;
+                                    processingMessage.style.display = 'none';
+                                    */
+                                });
+                            })
+                            .catch(error => {
+                                // For demo, proceed anyway
+                                processPayment(form);
+                                
+                                // Uncomment for production
+                                /*
+                                submitButton.disabled = false;
+                                processingMessage.style.display = 'none';
+                                */
+                            });
+                    });
+                } catch (e) {
+                    // Graceful fallback - proceed with payment
+                    processPayment(form);
+                }
+            } else {
+                // reCAPTCHA not enabled or not loaded, proceed directly to payment
+                processPayment(form);
+            }
+        });
+        
+        function processPayment(form) {
             exact.processOrder()
                 .then(payment_id => {
-                    // add the payment id to your form
-                    document.getElementById('payment_id').value = payment_id
-                    // submit your form to your backend
-                    form.submit()
+                    document.getElementById('payment_id').value = payment_id;
                 })
-                .catch(err => console.error(err));
-        });
+                .catch(err => {
+                    document.getElementById('processing-message').style.display = 'none';
+                    document.querySelector('.submit-button').disabled = false;
+                });
+        }
 
         exact.on("payment-complete", (payload) => {
-            // add the payment id to your form
             document.getElementById('payment_id').value = payload.paymentId;
-           // alert('Payment Id: '+payload.paymentId);
-            // submit your form to your backend
-
-            window.location = "/confirm?paymentId="+payload.paymentId;
+            window.location = "/confirm?paymentId=" + payload.paymentId;
         });
 
         exact.on("payment-failed", (payload) => {
-            const errorElem = document.getElementById("errors");
-            Array.from(payload.messages).forEach(err => {
+            const errorElem = document.getElementById("errors") || document.createElement("div");
+            if (!document.getElementById("errors")) {
+                errorElem.id = "errors";
+                document.querySelector('.payment-form').appendChild(errorElem);
+            }
+            
+            if (payload && payload.messages) {
+                Array.from(payload.messages).forEach(err => {
+                    const pElem = document.createElement("p");
+                    pElem.textContent = err;
+                    pElem.style.color = "#dc3545";
+                    errorElem.append(pElem);
+                });
+            } else {
                 const pElem = document.createElement("p");
-                pElem.textContent = err;
+                pElem.textContent = "Payment processing failed. Please try again.";
+                pElem.style.color = "#dc3545";
                 errorElem.append(pElem);
-            });
-            errorElem.classList.remove("hidden");
+            }
+            
+            document.getElementById('processing-message').style.display = 'none';
+            document.querySelector('.submit-button').disabled = false;
         });
-
     </script>
 </body>
 </html>
