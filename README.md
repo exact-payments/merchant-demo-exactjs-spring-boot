@@ -1,6 +1,6 @@
-# ExactPay Integration Demo
+# CSIPayJS Integration Demo
 
-A demonstration application showing how to integrate ExactPay's payment processing system into an e-commerce web application using Spring Boot and Thymeleaf.
+A demonstration application showing how to integrate Constellation Paymements Processing's CSIPayJS drop-in UI library into an e-commerce web application using Spring Boot and Thymeleaf.
 
 ## Overview
 
@@ -8,7 +8,7 @@ This demo showcases a simple e-commerce flow with the following features:
 
 - Product listing page
 - Shopping cart functionality
-- Secure payment processing with ExactPay
+- Secure payment processing with CSIPay
 - Google reCAPTCHA integration for enhanced security
 - Order confirmation
 
@@ -25,8 +25,8 @@ This demo showcases a simple e-commerce flow with the following features:
    Update the `src/main/resources/application.properties` file with your ExactPay API credentials:
    ```
    csipay.url = https://staging-pyxisapi.csipay.com/PyxisMasterApi/api/
-   security.token=<your-exactpay-security-token>
-   account.terminalId=<your-exactpay-terminal-id>
+   security.token=<your-csipaytpay-security-token>
+   account.terminalId=<your-csipay-terminal-id>
    account.paymentFlow=sale
    ```
 
@@ -77,7 +77,7 @@ To integrate reCAPTCHA in your application:
 1. User selects products on the homepage
 2. User clicks "Pay Now" on the checkout page
 3. If reCAPTCHA is enabled, invisible verification occurs
-4. Payment is processed through ExactPay
+4. Payment is processed through CSIPay
 5. User is redirected to confirmation page
 
 ## Sandbox Testing
@@ -88,7 +88,6 @@ Use the following test cards for sandbox testing:
 - **Mastercard**: 5555 5555 5555 4444
 - **Amex**: 3714 4963 5398 431
 
-For more test cards, visit the [ExactPay Documentation](https://developer.exactpay.com/docs/Sandbox-Test-Cards).
 
 ## Customization
 
@@ -107,7 +106,7 @@ For production deployment:
 
 ## Support
 
-For questions regarding ExactPay integration, please contact [developer@exactpay.com](mailto:developer@exactpay.com).
+For questions regarding CSIPay integration, please contact [developer@csipay.com](mailto:developer@csipay.com).
 
 For issues with this demo application, please open an issue on GitHub.
 
@@ -153,7 +152,7 @@ The business logic coded in this controller is as follows:
 First create an Order for the total sale amount coming in as the request parameter `amountStr`.
 This class makes a POST request to the endpoint:
 ```agsl
-https://test-pyxisapi.csipay.com/PyxisMasterApi/api/orders
+https://staging-pyxisapi.csipay.com/PyxisMasterApi/api/orders
 ```
 
 The response to this call will fetch two important
@@ -175,7 +174,7 @@ At the top of the page you will see the following JavaScript link included
 that is essential to initialize your payment page to work with CSIPayJS in a 
 way that does removes your PCI compliance overhead.
 ```
-<script src="https://test-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
+<script src="https://staging-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
  ```
 
 Notice that, in the body of the `pay.html` page you have a HTML snippet:
