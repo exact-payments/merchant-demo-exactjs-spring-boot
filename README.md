@@ -1,43 +1,119 @@
-# Demo Spring Boot Application for CSIPayJS
+# ExactPay Integration Demo
+
+A demonstration application showing how to integrate ExactPay's payment processing system into an e-commerce web application using Spring Boot and Thymeleaf.
 
 ## Overview
 
-CSIPayJS is client-side JavaScript library that can be used with eCommerce merchant web applications
-to accept online payments from customers without the PCI compliance requirements. This implementation of a Java Spring Boot application that is common
-among many eCommerce websites and shows how to integrate CSIPayJS.
+This demo showcases a simple e-commerce flow with the following features:
 
-More information about CSIPayJS can be found in the following guide:
-https://csipay-pyxis.readme.io/reference/getting-started-1
+- Product listing page
+- Shopping cart functionality
+- Secure payment processing with ExactPay
+- Google reCAPTCHA integration for enhanced security
+- Order confirmation
 
-## Prerequisites
+## Quick Start
 
-- Java version 17
-- Suitable version of Maven for building and running the application
-- This application uses Thymeleaf for the server-side rendering of HTML pages: https://www.thymeleaf.org/
+1. **Clone the repository**
+   ```
+   git clone https://github.com/yourusername/merchant-demo-exactjs-spring-boot.git
+   cd merchant-demo-exactjs-spring-boot
+   ```
 
-## Steps to use the demo app
-- Clone the repository
-```agsl
-git clone https://github.com/exact-payments/merchant-demo-exactjs-spring-boot.git
-```
+2. **Configure application properties**
 
+   Update the `src/main/resources/application.properties` file with your ExactPay API credentials:
+   ```
+   csipay.url = https://staging-pyxisapi.csipay.com/PyxisMasterApi/api/
+   security.token=<your-exactpay-security-token>
+   account.terminalId=<your-exactpay-terminal-id>
+   account.paymentFlow=sale
+   ```
 
+3. **Configure reCAPTCHA (Optional)**
 
-- Move to the directory of the source code of the application
-```agsl
-cd merchant-demo-exactjs-spring-boot
-```
-- Build and run the application
-```agsl
-./mvnw spring-boot:run
-```
+   The application includes Google reCAPTCHA v3 integration which is disabled by default. To enable it:
+   
+   a. Update your reCAPTCHA keys in `application.properties`:
+   ```
+   google.recaptcha.secret=<your-recaptcha-secret-key>
+   recaptcha.site-key=<your-recaptcha-site-key>
+   recaptcha.enabled=true
+   ```
 
-- Open the browser and load the following URL
-```agsl
-http://localhost:8080
-```
-You will see the home page of a eCommerce website. Add the products to the
-shopping cart and checkout.
+4. **Build and run the application**
+   ```
+   ./mvnw spring-boot:run
+   ```
+
+5. **Access the application**
+   
+   Open your browser and navigate to: `http://localhost:8080`
+
+## Features
+
+### Google reCAPTCHA Integration
+
+This demo includes an optional integration with Google reCAPTCHA v3 to protect against bots and fraud:
+
+- **How it works**: reCAPTCHA runs an invisible check before payment submission
+- **Configuration**: Enable/disable via the `recaptcha.enabled` property
+- **Centralized Configuration**: Both site key and secret key are configured in application.properties
+- **Customization**: For production, modify the code to enforce stricter verification (see comments in pay.html)
+
+To integrate reCAPTCHA in your application:
+
+1. Register your site at [Google reCAPTCHA Admin Console](https://www.google.com/recaptcha/admin)
+2. Choose reCAPTCHA v3
+3. Add your site key and secret key to application.properties:
+   ```
+   google.recaptcha.secret=<your-recaptcha-secret-key>
+   recaptcha.site-key=<your-recaptcha-site-key>
+   recaptcha.enabled=true
+   ```
+
+### Payment Flow
+
+1. User selects products on the homepage
+2. User clicks "Pay Now" on the checkout page
+3. If reCAPTCHA is enabled, invisible verification occurs
+4. Payment is processed through ExactPay
+5. User is redirected to confirmation page
+
+## Sandbox Testing
+
+Use the following test cards for sandbox testing:
+
+- **Visa**: 4111 1111 1111 1111
+- **Mastercard**: 5555 5555 5555 4444
+- **Amex**: 3714 4963 5398 431
+
+For more test cards, visit the [ExactPay Documentation](https://developer.exactpay.com/docs/Sandbox-Test-Cards).
+
+## Customization
+
+- Update the styling in the CSS sections of each HTML template
+- Modify the product catalog in the `index.html` file
+- Adjust the payment form fields in `pay.html`
+
+## Security Notes
+
+For production deployment:
+
+1. Enforce reCAPTCHA verification by uncommenting the relevant sections in `pay.html`
+2. Use HTTPS for all communications
+3. Consider implementing additional server-side validation
+4. Update to production API endpoints and credentials
+
+## Support
+
+For questions regarding ExactPay integration, please contact [developer@exactpay.com](mailto:developer@exactpay.com).
+
+For issues with this demo application, please open an issue on GitHub.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Details of CSIPayJS Integration
 

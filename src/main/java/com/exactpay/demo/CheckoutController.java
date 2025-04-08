@@ -24,12 +24,18 @@ public class CheckoutController {
 
     @Value("${account.paymentFlow}")
     private String paymentFlow;
+    
+    @Value("${recaptcha.enabled:false}")
+    private boolean recaptchaEnabled;
+    
+    @Value("${recaptcha.site-key:}")
+    private String recaptchaSiteKey;
 
     @GetMapping("/checkout")
     public String doCheckout(Model model, @RequestParam String amountStr) {
         System.out.println("Order amount: "+amountStr);
         System.out.println("Terminal Id: "+terminalId);
-        System.out.println("Payment Flow: "+paymentFlow);;
+        System.out.println("Payment Flow: "+paymentFlow);
 
         int amount = Integer.parseInt(amountStr);
         
@@ -48,13 +54,21 @@ public class CheckoutController {
         ResponseEntity<Order> response = restTemplate.postForEntity(url,request,Order.class);
         System.out.println("Status Code: "+response.getStatusCode());
         System.out.println("Response Body:"+response.getBody().toString());
+        System.out.println("Access Token:"+response.getBody().getAccessToken());
+        System.out.println("Order Id:"+response.getBody().getOrderId());
+        
         Order order = response.getBody();
         String accessToken = order.getAccessToken().getToken();
         System.out.println("access token: "+accessToken);
         System.out.println("Order id: "+order.getOrderId());
         model.addAttribute("orderid",order.getOrderId());
         model.addAttribute("accesstoken", accessToken);
-        model.addAttribute("totalAmount","$"+Integer.parseInt(amountStr)/100);
+        model.addAttribute("amount","$"+Integer.parseInt(amountStr)/100);
+        
+        // Add reCAPTCHA configuration to the model
+        model.addAttribute("enableRecaptcha", recaptchaEnabled);
+        model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
+        
         return "pay";
     }
 
