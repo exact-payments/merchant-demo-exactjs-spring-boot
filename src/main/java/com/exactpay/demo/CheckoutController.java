@@ -39,7 +39,8 @@ public class CheckoutController {
 
         int amount = Integer.parseInt(amountStr);
         
-        OrderRequest orderRequest = new OrderRequest(amount, terminalId, paymentFlow);
+        Details details = new Details(amount, terminalId);
+        OrderRequest orderRequest = new OrderRequest(paymentFlow, details);
         System.out.println(orderRequest.toString());
         String url = csipayURL+"orders";
 
