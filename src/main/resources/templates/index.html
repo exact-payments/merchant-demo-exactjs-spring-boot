@@ -21,8 +21,8 @@
             console.log('Price Str: '+priceStr);
             var price = priceStr.substring(1);
             console.log('Price: '+price);
-             total += parseInt(price);
-            amountElement.innerHTML = "Your Order Total: $" + total;
+             total += parseFloat(price);
+            amountElement.innerHTML = "Your Order Total: $" + total.toFixed(2);
         }
 
         async function pay() {
@@ -32,7 +32,7 @@
             var index = amount.indexOf("$");
             var amountStr = amount.substring(index+1);
             console.log(amountStr);
-            let orderAmount = parseInt(amountStr)*100;
+            let orderAmount = Math.round(parseFloat(amountStr)*100);
             window.location = "/checkout?amountStr="+orderAmount;
         }
     </script>
@@ -162,32 +162,32 @@
 <div class="product-list-container">
     <div class="card">
         <img src="01.jpg" alt="Plant 1" style="width:100%">
-        <p class="price" id="item1">$1</p>
+        <p class="price" id="item1">$0.20</p>
         <p><button id="button1" onclick="updateTotal(this.id)">Add to Cart</button></p>
     </div>
     <div class="card">
         <img src="02.jpg" alt="Plant 2" style="width:100%">
-        <p class="price" id="item2">$2</p>
+        <p class="price" id="item2">$2.75</p>
         <p><button id="button2" onclick="updateTotal(this.id)">Add to Cart</button></p>
     </div>
     <div class="card">
         <img src="03.jpg" alt="Plant 3" style="width:100%">
-        <p class="price" id="item3">$3</p>
+        <p class="price" id="item3">$3.99</p>
         <p><button id="button3" onclick="updateTotal(this.id)">Add to Cart</button></p>
     </div>
     <div class="card">
         <img src="04.jpg" alt="Plant 4" style="width:100%">
-        <p class="price" id="item4">$4</p>
+        <p class="price" id="item4">$4.25</p>
         <p><button id="button4" onclick="updateTotal(this.id)">Add to Cart</button></p>
     </div>
     <div class="card">
         <img src="05.jpg" alt="Plant 5" style="width:100%">
-        <p class="price" id="item5">$5</p>
+        <p class="price" id="item5">$0.99</p>
         <p><button id="button5" onclick="updateTotal(this.id)">Add to Cart</button></p>
     </div>
     <div class="card">
         <img src="06.jpg" alt="Plant 6" style="width:100%">
-        <p class="price" id="item6">$6</p>
+        <p class="price" id="item6">$10.50</p>
         <p><button id="button6" onclick="updateTotal(this.id)">Add to Cart</button></p>
     </div>
 </div>
@@ -196,7 +196,7 @@
         <h1>Your Cart</h1>
     </div>
     <div class="title">
-        <h3 id="amount">Your Order Total: $0</h3>
+        <h3 id="amount">Your Order Total: $0.00</h3>
     </div>
 
     <p><button onclick="pay()">Checkout</button></p>

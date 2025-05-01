@@ -89,11 +89,7 @@
 </head>
 <body>
     <div class="confirmation-container">
-        <div th:if="${paymentStatus == 'success'}">
-            <i class="fas fa-check-circle status-icon success-icon"></i>
-            <h1 class="status-title">Payment Successful!</h1>
-            <p class="status-message">Thank you for your payment. Your transaction has been completed successfully.</p>
-        </div>
+        
         
         <div th:if="${paymentStatus == 'failed'}">
             <i class="fas fa-times-circle status-icon error-icon"></i>
@@ -106,8 +102,6 @@
         </div>
 
         <div class="payment-details">
-            <p><strong>Payment ID:</strong> <span th:text="${paymentId}"></span></p>
-            <p><strong>Amount:</strong> <span th:text="${amount}"></span></p>
             <p><strong>Status:</strong> <span th:text="${paymentStatus}"></span></p>
         </div>
 

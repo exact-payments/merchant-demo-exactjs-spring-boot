@@ -145,6 +145,7 @@
 
             <input type="hidden" name="payment_id" id="payment_id">
             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+            <input type="hidden" name="amount" id="amount" th:value="${amount}">
             
             <div class="error-message" id="recaptcha-error">
                 Security verification failed. Please try again.
@@ -280,40 +281,86 @@
                     document.getElementById('payment_id').value = payment_id;
                 })
                 .catch(err => {
+                    console.error('Payment processing error:', err);
+                    const errorElem = document.getElementById("errors") || document.createElement("div");
+                    if (!document.getElementById("errors")) {
+                        errorElem.id = "errors";
+                        document.querySelector('.payment-form').appendChild(errorElem);
+                    }
+                    
+                    // Clear any existing errors
+                    errorElem.innerHTML = '';
+                    
+                    // Handle different error formats
+                    if (err && err.paymentDetails && err.paymentDetails.errors) {
+                        // Handle array of errors
+                        err.paymentDetails.errors.forEach(errorMessage => {
+                            const pElem = document.createElement("p");
+                            pElem.textContent = errorMessage;
+                            pElem.style.color = "#dc3545";
+                            errorElem.append(pElem);
+                        });
+                    } else if (err && err.message) {
+                        // Handle single error message
+                        const pElem = document.createElement("p");
+                        pElem.textContent = err.message;
+                        pElem.style.color = "#dc3545";
+                        errorElem.append(pElem);
+                    } else {
+                        // Generic error message
+                        const pElem = document.createElement("p");
+                        pElem.textContent = "Payment processing failed. Please try again.";
+                        pElem.style.color = "#dc3545";
+                        errorElem.append(pElem);
+                    }
+                    
                     document.getElementById('processing-message').style.display = 'none';
                     document.querySelector('.submit-button').disabled = false;
                 });
         }
 
         exact.on("payment-complete", (payload) => {
-            console.log('Payment completed ---------------------->');
-            document.getElementById('payment_id').value = payload.paymentId;
-            window.location = "/confirm?paymentId=" + payload.paymentId;
+            console.log('Payment completed ---------------------->', payload);
+            const paymentId = payload.paymentId || document.getElementById('payment_id').value;
+            const amount = document.getElementById('amount').value;
+            
+            if (paymentId) {
+                // Construct the URL with all required parameters
+                const confirmUrl = new URL('/confirmSuccess', window.location.origin);
+                confirmUrl.searchParams.append('paymentId', paymentId);
+                confirmUrl.searchParams.append('paymentStatus', 'success');
+                confirmUrl.searchParams.append('amount', amount);
+                
+                // Log the URL for debugging
+                console.log('Redirecting to:', confirmUrl.toString());
+                
+                // Redirect to the confirm page
+                window.location.href = confirmUrl.toString();
+            } else {
+                console.error('Payment ID is missing');
+                document.getElementById('processing-message').style.display = 'none';
+                document.querySelector('.submit-button').disabled = false;
+            }
         });
 
         exact.on("payment-failed", (payload) => {
-            const errorElem = document.getElementById("errors") || document.createElement("div");
-            if (!document.getElementById("errors")) {
-                errorElem.id = "errors";
-                document.querySelector('.payment-form').appendChild(errorElem);
-            }
+            console.log('Payment failed:', payload);
+             
+            // Get the first error message from the errors array
+            const errorMessage = payload.messages?.[0] || "Payment processing failed. Please try again.";
             
-            if (payload && payload.messages) {
-                Array.from(payload.messages).forEach(err => {
-                    const pElem = document.createElement("p");
-                    pElem.textContent = err;
-                    pElem.style.color = "#dc3545";
-                    errorElem.append(pElem);
-                });
-            } else {
-                const pElem = document.createElement("p");
-                pElem.textContent = "Payment processing failed. Please try again.";
-                pElem.style.color = "#dc3545";
-                errorElem.append(pElem);
-            }
-            
-            document.getElementById('processing-message').style.display = 'none';
-            document.querySelector('.submit-button').disabled = false;
+            // Construct the URL with all required parameters
+            const confirmUrl = new URL('/confirmFailure', window.location.origin);
+               // confirmUrl.searchParams.append('paymentId', orderId); // Using orderId as paymentId for failed payments
+                confirmUrl.searchParams.append('paymentStatus', 'failed');
+                confirmUrl.searchParams.append('errorMessage', errorMessage);
+                
+                // Log the URL and payload for debugging
+                console.log('Payment failed payload:', payload);
+                console.log('Redirecting to:', confirmUrl.toString());
+                
+                // Redirect to the confirm page
+                window.location.href = confirmUrl.toString();
         });
     </script>
 </body>
