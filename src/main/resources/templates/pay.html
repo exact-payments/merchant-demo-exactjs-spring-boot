@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Pay your Order</title>
-    <script src="https://test-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
+    <script th:src="${csipayjsUrl}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- reCAPTCHA script is loaded only if enableRecaptcha is true -->
@@ -56,6 +56,47 @@
         .order-total {
             font-size: 20px;
             margin: 20px 0;
+        }
+
+        .order-total strong {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .amount-breakdown {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .amount-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .amount-line:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+
+        .amount-label {
+            color: #6c757d;
+        }
+
+        .amount-value {
+            color: #212529;
+        }
+
+        .surcharge-note {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
         }
 
         .payment-form {
@@ -130,7 +171,7 @@
                 <a href="https://developer.exactpay.com/docs/Sandbox-Test-Cards" class="test-cards-link">TEST CARDS</a>
             </h2>
         -->
-            <p class="order-total">Your Order total is: <strong th:text="${amount}"></strong></p>
+            <p class="order-total">Your Order Amount is: <strong th:text="${amount}"></strong></p>
         </div>
 
         <form id="myForm" action="your_form_url" method="post" class="payment-form">
@@ -167,6 +208,8 @@
         var orderId = /*[[${orderid}]]*/ '';
         var enableRecaptcha = /*[[${enableRecaptcha}]]*/ false;
         var recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ '';
+        // Default surcharge is 0
+        let surcharge = 0;
         
         // Initialize payment component
         const exact = CSIPayJS(accessToken);
@@ -276,7 +319,7 @@
         });
         
         function processPayment(form) {
-            exact.processOrder()
+            exact.processOrder(surcharge)
                 .then(payment_id => {
                     document.getElementById('payment_id').value = payment_id;
                 })
@@ -322,14 +365,23 @@
         exact.on("payment-complete", (payload) => {
             console.log('Payment completed ---------------------->', payload);
             const paymentId = payload.paymentId || document.getElementById('payment_id').value;
-            const amount = document.getElementById('amount').value;
+            const baseAmount = document.getElementById('amount').value;
+            
+            // Add surcharge to the base amount
+            const parsedBaseAmount = parseFloat(baseAmount.replace(/[^0-9.]/g, ''));
+            const parsedSurcharge = parseFloat(surcharge) || 0;
+            const totalAmount = parsedBaseAmount + parsedSurcharge;
+            
+            console.log('Base Amount:', parsedBaseAmount);
+            console.log('Surcharge:', parsedSurcharge);
+            console.log('Total Amount:', totalAmount);
             
             if (paymentId) {
                 // Construct the URL with all required parameters
                 const confirmUrl = new URL('/confirmSuccess', window.location.origin);
                 confirmUrl.searchParams.append('paymentId', paymentId);
                 confirmUrl.searchParams.append('paymentStatus', 'success');
-                confirmUrl.searchParams.append('amount', amount);
+                confirmUrl.searchParams.append('amount', totalAmount.toFixed(2));
                 
                 // Log the URL for debugging
                 console.log('Redirecting to:', confirmUrl.toString());
@@ -362,6 +414,89 @@
                 // Redirect to the confirm page
                 window.location.href = confirmUrl.toString();
         });
+
+        exact.on("payment-method", (payload) => {
+            console.log('Payment method event payload:', payload);
+            const surcharge = calculateSurcharge(payload);
+            console.log('Surcharge: ', surcharge);
+            
+            // Update the order total display
+            const orderTotalElement = document.querySelector('.order-total strong');
+            if (orderTotalElement) {
+                // Get the original amount
+                const originalAmount = parseFloat(orderTotalElement.textContent.replace(/[^0-9.]/g, ''));
+                
+                if (surcharge > 0) {
+                    // Calculate new total
+                    const newTotal = originalAmount + surcharge;
+                    
+                    // Format the amounts with 2 decimal places
+                    const formattedOriginal = originalAmount.toFixed(2);
+                    const formattedSurcharge = surcharge.toFixed(2);
+                    const formattedTotal = newTotal.toFixed(2);
+                    
+                    // Update the display with styled breakdown
+                    orderTotalElement.innerHTML = `
+                        <div class="amount-breakdown">
+                            <div class="amount-line">
+                                <span class="amount-label">Original Amount:</span>
+                                <span class="amount-value">$${formattedOriginal}</span>
+                            </div>
+                            <div class="amount-line">
+                                <span class="amount-label">Surcharge (2.5%):</span>
+                                <span class="amount-value">$${formattedSurcharge}</span>
+                            </div>
+                            <div class="amount-line">
+                                <span class="amount-label">Total Amount:</span>
+                                <span class="amount-value">$${formattedTotal}</span>
+                            </div>
+                            <div class="surcharge-note">* Surcharge applies to non-debit card payments</div>
+                        </div>
+                    `;
+                } else {
+                    // If no surcharge, just show the original amount
+                    const formattedOriginal = originalAmount.toFixed(2);
+                    orderTotalElement.innerHTML = `
+                        <div class="amount-breakdown">
+                            <div class="amount-line">
+                                <span class="amount-label">Total Amount:</span>
+                                <span class="amount-value">$${formattedOriginal}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        function calculateSurcharge(payload) {
+            // Log the payload for debugging
+            console.log('Calculating surcharge for payload:', payload);
+            
+            
+            
+            // Check if payload exists and has the expected structure
+            if (payload && payload.details && payload.details.debit === false) {
+                // Get the order amount from the order-total element
+                const orderTotalElement = document.querySelector('.order-total strong');
+                if (orderTotalElement) {
+                    // Remove currency symbol and convert to number
+                    const orderAmount = parseFloat(orderTotalElement.textContent.replace(/[^0-9.]/g, ''));
+                    
+                    // Calculate 2.5% surcharge
+                    surcharge = orderAmount * 0.025;
+                    
+                    // Log the calculation
+                    console.log('Order amount:', orderAmount);
+                    console.log('Calculated surcharge:', surcharge);
+                } else {
+                    console.error('Could not find order total element');
+                }
+            } else {
+                console.log('No surcharge applied - debit card or invalid payload');
+            }
+            
+            return surcharge;
+        }
     </script>
 </body>
 </html>

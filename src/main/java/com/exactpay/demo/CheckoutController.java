@@ -21,6 +21,9 @@ public class CheckoutController {
     @Value("${csipay.url}")
     private String csipayURL;
 
+    @Value("${csipayjs.url}")
+    private String csipayjsUrl;
+
     @Value("${security.token}")
     private String securityToken;
 
@@ -88,6 +91,8 @@ public class CheckoutController {
                 String accessToken = order.getAccessToken().getToken();
                 System.out.println("access token: " + accessToken);
                 System.out.println("Order id: " + order.getOrderId());
+
+                model.addAttribute("csipayjsUrl", csipayjsUrl);
                 
                 model.addAttribute("orderid", order.getOrderId());
                 model.addAttribute("accesstoken", accessToken);
