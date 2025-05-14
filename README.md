@@ -259,3 +259,29 @@ payment. For example, as shown in the JavaScript code below, the payment-complet
 event handler can call an endpoint to show a confirmation page. In this sample application
 we use the same Spring Boot controller class, `CheckoutController` with a
 new method mapping for `/confirm` in the URI with the `paymentID` as a request parameter.
+```
+
+## Surcharging Feature
+
+This demo now includes a dynamic surcharging feature on the payment page. When a user selects a payment method, the application calculates and displays a surcharge based on the method and order amount. The surcharge logic is as follows:
+
+- If the payment method is a credit card (not debit) and the order amount is $100 or more, a 3% surcharge is applied.
+- If the payment method is a credit card (not debit) and the order amount is less than $100, a $2.00 flat surcharge is applied.
+- No surcharge is applied for debit cards or ACH.
+
+The surcharge and the new total (including surcharge) are displayed to the user before payment. You can find the relevant logic in the `pay.html` template, specifically in the JavaScript event handler for the `payment-method` event and the `calculateSurcharge` function.
+
+## Tokenization Feature
+
+A new tokenization screen is available at `/tokenize`. This page allows users to securely tokenize a payment method (credit card or bank account) without making a payment. The flow is as follows:
+
+1. Navigate to `/tokenize`.
+2. Enter payment method details and (optionally) email address.
+3. Click the "Tokenize" button.
+4. The application will display the resulting token on the page, or show an error if tokenization fails.
+
+The tokenization logic is implemented in:
+- `TokenizeController` (Java, handles the /tokenize endpoint and order creation)
+- `tokenize.html` (Thymeleaf template, handles the UI and JavaScript logic)
+
+The page uses the CSIPayJS library to securely collect and tokenize payment method data. The event handlers for `payment-complete` and `payment-failed` are implemented in the template to handle the result and display the token or error message accordingly.

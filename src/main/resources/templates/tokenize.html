@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tokenize Payment Method</title>
+    <script th:src="${csipayjsUrl}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- reCAPTCHA script is loaded only if enableRecaptcha is true -->
+    <script th:if="${enableRecaptcha != null && enableRecaptcha}" th:src="'https://www.recaptcha.net/recaptcha/api.js?render=' + ${recaptchaSiteKey}"></script>
+    
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+            padding: 20px;
+        }
+
+        .tokenize-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0px 25px 40px #1687d933;
+        }
+
+        .header-text {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #5E6977;
+        }
+
+        .demo-notice {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .demo-subtitle {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .payment-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5E6977;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #cardElement {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: #333;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .processing-message {
+            color: #007bff;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .token-result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="tokenize-container">
+        <div class="header-text">
+            <h1 class="demo-notice">Demonstration Only</h1>
+            <h2 class="demo-subtitle">Tokenization is simulated and no actual payment method is stored.</h2>
+        </div>
+
+        <form id="tokenizeForm" class="payment-form">
+            <div class="form-group">
+                <label for="email-address">Email address</label>
+                <input type="email" id="email-address" name="email-address" autocomplete="email">
+            </div>
+            
+            <div id="cardElement">
+                <!-- credit card UI component will be attached here -->
+            </div>
+            <input type="hidden" name="token" id="token">
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+            
+            <div class="error-message" id="recaptcha-error">
+                Security verification failed. Please try again.
+            </div>
+
+            <div id="processing-message" class="processing-message">
+                Processing your request...
+            </div>
+
+            <div class="token-result" id="tokenResult">
+                <h3>Tokenization Result</h3>
+                <div id="tokenValue"></div>
+            </div>
+
+            <div>
+                <input type="submit" name="commit" value="Tokenize" class="submit-button">
+            </div>
+        </form>
+    </div>
+
+    <script th:inline="javascript">
+        // Safely access Thymeleaf variables
+        var accessToken = /*[[${accesstoken}]]*/ '';
+        var orderId = /*[[${orderid}]]*/ '';
+        var terminalId = /*[[${terminalId}]]*/ '';
+        var enableRecaptcha = /*[[${enableRecaptcha}]]*/ false;
+        var recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ '';
+        
+        // Initialize payment component
+        const exact = CSIPayJS(accessToken);
+        const components = exact.components({orderId: orderId});
+        
+        // Setup card element
+        components.addComponent('cardElement', 'unified', {
+            credit: true,
+            ach: true,
+            billingAddress: {
+                type: "full"
+            },
+            style: {
+                default: {
+                    backgroundColor: "white",
+                    padding: "12px",
+                    borderRadius: "4px",
+                    fontSize: "16px"
+                },
+                error: {
+                    backgroundColor: "#fff0f0",
+                    border: "1px solid #ff5555",
+                    borderRadius: "4px"
+                }
+            }
+        });
+
+        // Form submission handler
+        document.getElementById("tokenizeForm").addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const form = this;
+            const submitButton = form.querySelector('.submit-button');
+            const processingMessage = document.getElementById('processing-message');
+            
+            // Disable button and show processing message
+            submitButton.disabled = true;
+            processingMessage.style.display = 'block';
+            
+            // Check if reCAPTCHA is enabled
+            if (enableRecaptcha && typeof grecaptcha !== 'undefined') {
+                // Execute reCAPTCHA
+                try {
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute(recaptchaSiteKey, {action: 'tokenize_submit'})
+                            .then(function(token) {
+                                document.getElementById('g-recaptcha-response').value = token;
+                                processTokenization(form);
+                            })
+                            .catch(error => {
+                                console.error('reCAPTCHA error:', error);
+                                submitButton.disabled = false;
+                                processingMessage.style.display = 'none';
+                            });
+                    });
+                } catch (e) {
+                    console.error('reCAPTCHA error:', e);
+                    submitButton.disabled = false;
+                    processingMessage.style.display = 'none';
+                }
+            } else {
+                // reCAPTCHA not enabled or not loaded, proceed directly to tokenization
+                processTokenization(form);
+            }
+        });
+        
+        function processTokenization(form) {
+            exact.processOrder()
+                .then(token => {
+                    // Display the token
+                    const tokenResult = document.getElementById('tokenResult');
+                    const tokenValue = document.getElementById('tokenValue');
+                    tokenValue.textContent = `Token: ${token}`;
+                    tokenResult.style.display = 'block';
+                    
+                    // Reset form
+                    form.reset();
+                    document.getElementById('processing-message').style.display = 'none';
+                    document.querySelector('.submit-button').disabled = false;
+                })
+                .catch(err => {
+                    console.error('Tokenization error:', err);
+                    const errorElem = document.getElementById("errors") || document.createElement("div");
+                    if (!document.getElementById("errors")) {
+                        errorElem.id = "errors";
+                        document.querySelector('.payment-form').appendChild(errorElem);
+                    }
+                    
+                    // Clear any existing errors
+                    errorElem.innerHTML = '';
+                    
+                    // Handle different error formats
+                    if (err && err.messages) {
+                        // Handle array of errors
+                        err.messages.forEach(errorMessage => {
+                            const pElem = document.createElement("p");
+                            pElem.textContent = errorMessage;
+                            pElem.style.color = "#dc3545";
+                            errorElem.append(pElem);
+                        });
+                    } else if (err && err.message) {
+                        // Handle single error message
+                        const pElem = document.createElement("p");
+                        pElem.textContent = err.message;
+                        pElem.style.color = "#dc3545";
+                        errorElem.append(pElem);
+                    } else {
+                        // Generic error message
+                        const pElem = document.createElement("p");
+                        pElem.textContent = "Tokenization failed. Please try again.";
+                        pElem.style.color = "#dc3545";
+                        errorElem.append(pElem);
+                    }
+                    
+                    document.getElementById('processing-message').style.display = 'none';
+                    document.querySelector('.submit-button').disabled = false;
+                });
+        }
+
+        exact.on("payment-complete", (payload) => {
+            console.log('Payment completed ---------------------->', payload);
+            const token = payload.token || document.getElementById('token').value;
+            
+            if (token) {
+                // Construct the URL with all required parameters
+                const confirmUrl = new URL('/tokenizationSuccess', window.location.origin);
+                confirmUrl.searchParams.append('token', token);
+                confirmUrl.searchParams.append('paymentStatus', "success");
+                
+                // Log the URL for debugging
+                console.log('Redirecting to:', confirmUrl.toString());
+                
+                // Redirect to the confirm page
+                window.location.href = confirmUrl.toString();
+            } else {
+                console.error('Payment ID is missing');
+                document.getElementById('processing-message').style.display = 'none';
+                document.querySelector('.submit-button').disabled = false;
+            }
+        });
+
+        exact.on("payment-failed", (payload) => {
+            console.log('Payment failed:', payload);
+             
+            // Get the first error message from the errors array
+            const errorMessage = payload.messages?.[0] || "Payment processing failed. Please try again.";
+            
+            // Construct the URL with all required parameters
+            const confirmUrl = new URL('/tokenizationFailure', window.location.origin);
+            confirmUrl.searchParams.append('paymentStatus', 'failed');
+            confirmUrl.searchParams.append('errorMessage', errorMessage);
+            
+            // Log the URL and payload for debugging
+            console.log('Payment failed payload:', payload);
+            console.log('Redirecting to:', confirmUrl.toString());
+            
+            // Redirect to the confirm page
+            window.location.href = confirmUrl.toString();
+        });
+    </script>
+</body>
+</html> 

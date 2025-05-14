@@ -43,4 +43,23 @@ public class PaymentController {
         return "confirmFail";
 
     }
+
+    @GetMapping("/tokenizationSuccess")
+    public String tokenizationSuccess(@RequestParam String token, 
+                                      @RequestParam(required = false, defaultValue = "failed") String paymentStatus,
+                                      Model model) {
+        System.out.println("Token: "+token);
+        model.addAttribute("token", token);
+        model.addAttribute("paymentStatus", paymentStatus);
+        return "tokenizationSuccess";
+    }
+
+    @GetMapping("/tokenizationFailure")
+    public String tokenizationFailure( @RequestParam(required = false) String errorMessage, 
+                                      @RequestParam(required = false, defaultValue = "failed") String paymentStatus,
+                                      Model model) {
+        model.addAttribute("paymentStatus", paymentStatus);
+        model.addAttribute("errorMessage", errorMessage);
+        return "tokenizationFail";
+    }
 } 
