@@ -47,7 +47,12 @@ public class CheckoutController {
     }
 
     @GetMapping("/checkout")
-    public String doCheckout(Model model, @RequestParam String amountStr) {
+    public String doCheckout(Model model, @RequestParam String amountStr,
+                             jakarta.servlet.http.HttpServletResponse response) {
+        // Prevent browser caching in development
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
         System.out.println("Order amount: " + amountStr);
         System.out.println("Terminal Id: " + terminalId);
         System.out.println("Payment Flow: " + paymentFlow);
