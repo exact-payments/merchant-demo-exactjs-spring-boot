@@ -22,10 +22,10 @@ This demo showcases a simple e-commerce flow with the following features:
 
 2. **Configure application properties**
 
-   Update the `src/main/resources/application.properties` file with your ExactPay API credentials:
+   Update the `src/main/resources/application.properties` file with your CSIPay API credentials:
    ```
    csipay.url = https://staging-pyxisapi.csipay.com/PyxisMasterApi/api/
-   security.token=<your-csipaytpay-security-token>
+   security.token=<your-csipay-security-token>
    account.terminalId=<your-csipay-terminal-id>
    account.paymentFlow=sale
    ```
@@ -33,7 +33,7 @@ This demo showcases a simple e-commerce flow with the following features:
 3. **Configure reCAPTCHA (Optional)**
 
    The application includes Google reCAPTCHA v3 integration which is disabled by default. To enable it:
-   
+
    a. Update your reCAPTCHA keys in `application.properties`:
    ```
    google.recaptcha.secret=<your-recaptcha-secret-key>
@@ -47,7 +47,7 @@ This demo showcases a simple e-commerce flow with the following features:
    ```
 
 5. **Access the application**
-   
+
    Open your browser and navigate to: `http://localhost:8080`
 
 ## Features
@@ -118,7 +118,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 The integration of CSIPayJS library involves HTML/JavaScript frontend
 changes as well a backend changes in your Spring Boot application. The following steps
-outline how these changes are implemented in this sample application. 
+outline how these changes are implemented in this sample application.
 
 Please review the contents of the `application.properties` file in the `src/main/resources`
 directory. This file contains the following properties:
@@ -126,10 +126,10 @@ directory. This file contains the following properties:
 - `security.token` - This is the identity and authorization token with the necessary permissions to use Pyxis API.
 ### 1. Home Page of the eCommerce site
 
-_HomeController.java_ 
+_HomeController.java_
 
 This is a Spring MVC controller class to deliver the home page of the sample eCommerce
-merchant page. This simply returns an index.html file that is the sample 
+merchant page. This simply returns an index.html file that is the sample
 product page of the online plant shop.
 
 ### 2. _index.html_ page
@@ -170,8 +170,8 @@ on the payment form page next.
 ### 4. Building the payment page and form
 
 Please start with the `pay.html` page included in this project.
-At the top of the page you will see the following JavaScript link included 
-that is essential to initialize your payment page to work with CSIPayJS in a 
+At the top of the page you will see the following JavaScript link included
+that is essential to initialize your payment page to work with CSIPayJS in a
 way that does removes your PCI compliance overhead.
 ```
 <script src="https://staging-pyxisapi.csipay.com/js/v1/csi_pay.js"></script>
@@ -182,9 +182,9 @@ Notice that, in the body of the `pay.html` page you have a HTML snippet:
 ```<p style="text-align: center"> Your Order total is: <strong th:text="${amount}"></strong></p>```
 
 This is about informing your eCommerce customer about their payment amount
-that is coming through the order they just placed. The syntax of how you capture 
+that is coming through the order they just placed. The syntax of how you capture
 from the model attributes we set in the Spring Controller backend should be
-fairly self-explanatory. For more information on this, please refer to the Thymeleaf templating engine documentation. 
+fairly self-explanatory. For more information on this, please refer to the Thymeleaf templating engine documentation.
 ```https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html```
 
 The most important part of building the payment page with the help of CSIPayJS
@@ -211,7 +211,7 @@ the following JavaScript code snippet:
             }
         }
     });
-    
+
 ```
 The above JavaScript code will render the required payment fields inside the
 following `<div>` element you will see inside the `<form>` element
@@ -237,7 +237,7 @@ document.getElementById("myForm").addEventListener('submit', (event) => {
         event.preventDefault();
 
         const form = event.target.closest("form");
-        csipay.payOrder()
+        csipay.processOrder()
             .then(payment_id => {
                 // add the payment id to your form
                 document.getElementById('payment_id').value = payment_id

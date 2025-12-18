@@ -1,4 +1,4 @@
-package com.exactpay.demo;
+package com.csipay.demo;
 
 public class Details {
 
@@ -25,5 +25,5 @@ public class Details {
     public void setTerminalId(String terminalId) {
         this.terminalId = terminalId;
     }
-    
+
 }

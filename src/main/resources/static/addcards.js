@@ -1,7 +1,7 @@
 function addCardElements() {
     console.log("Calling addCardElements function...")
-    const exact = [[${accesstoken}]];
-    const components = exact.components({orderId: [[${orderid}]]});
+    const csipay = CSIPayJS([[${ accesstoken }]);
+    const components = csipay.components({ orderId: [[${ orderid }]] });
     components.addCard('cardElement');
 
 }

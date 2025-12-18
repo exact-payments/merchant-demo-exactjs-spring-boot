@@ -1,4 +1,4 @@
-package com.exactpay.demo;
+package com.csipay.demo;
 
 public class Reference {
 
@@ -6,7 +6,6 @@ public class Reference {
 
     public Reference(String referenceNo) {
         this.referenceNo = referenceNo;
-
 
     }
 

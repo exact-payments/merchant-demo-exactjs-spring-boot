@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>Tokenize Payment Method</title>
     <script th:src="${csipayjsUrl}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- reCAPTCHA script is loaded only if enableRecaptcha is true -->
-    <script th:if="${enableRecaptcha != null && enableRecaptcha}" th:src="'https://www.recaptcha.net/recaptcha/api.js?render=' + ${recaptchaSiteKey}"></script>
-    
+    <script th:if="${enableRecaptcha != null && enableRecaptcha}"
+        th:src="'https://www.recaptcha.net/recaptcha/api.js?render=' + ${recaptchaSiteKey}"></script>
+
     <style>
         body {
             background-color: #f5f5f5;
@@ -88,14 +93,14 @@
         .submit-button:hover {
             background-color: #333;
         }
-        
+
         .error-message {
             color: #dc3545;
             font-size: 14px;
             margin-top: 10px;
             display: none;
         }
-        
+
         .processing-message {
             color: #007bff;
             text-align: center;
@@ -112,6 +117,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="tokenize-container">
         <div class="header-text">
@@ -124,13 +130,13 @@
                 <label for="email-address">Email address</label>
                 <input type="email" id="email-address" name="email-address" autocomplete="email">
             </div>
-            
+
             <div id="cardElement">
                 <!-- credit card UI component will be attached here -->
             </div>
             <input type="hidden" name="token" id="token">
             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-            
+
             <div class="error-message" id="recaptcha-error">
                 Security verification failed. Please try again.
             </div>
@@ -157,11 +163,11 @@
         var terminalId = /*[[${terminalId}]]*/ '';
         var enableRecaptcha = /*[[${enableRecaptcha}]]*/ false;
         var recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ '';
-        
+
         // Initialize payment component
-        const exact = CSIPayJS(accessToken);
-        const components = exact.components({orderId: orderId});
-        
+        const csipay = CSIPayJS(accessToken);
+        const components = csipay.components({ orderId: orderId });
+
         // Setup card element
         components.addComponent('cardElement', 'unified', {
             credit: true,
@@ -185,24 +191,24 @@
         });
 
         // Form submission handler
-        document.getElementById("tokenizeForm").addEventListener('submit', function(event) {
+        document.getElementById("tokenizeForm").addEventListener('submit', function (event) {
             event.preventDefault();
-            
+
             const form = this;
             const submitButton = form.querySelector('.submit-button');
             const processingMessage = document.getElementById('processing-message');
-            
+
             // Disable button and show processing message
             submitButton.disabled = true;
             processingMessage.style.display = 'block';
-            
+
             // Check if reCAPTCHA is enabled
             if (enableRecaptcha && typeof grecaptcha !== 'undefined') {
                 // Execute reCAPTCHA
                 try {
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute(recaptchaSiteKey, {action: 'tokenize_submit'})
-                            .then(function(token) {
+                    grecaptcha.ready(function () {
+                        grecaptcha.execute(recaptchaSiteKey, { action: 'tokenize_submit' })
+                            .then(function (token) {
                                 document.getElementById('g-recaptcha-response').value = token;
                                 processTokenization(form);
                             })
@@ -222,16 +228,16 @@
                 processTokenization(form);
             }
         });
-        
+
         function processTokenization(form) {
-            exact.processOrder()
+            csipay.processOrder()
                 .then(token => {
                     // Display the token
                     const tokenResult = document.getElementById('tokenResult');
                     const tokenValue = document.getElementById('tokenValue');
                     tokenValue.textContent = `Token: ${token}`;
                     tokenResult.style.display = 'block';
-                    
+
                     // Reset form
                     form.reset();
                     document.getElementById('processing-message').style.display = 'none';
@@ -244,10 +250,10 @@
                         errorElem.id = "errors";
                         document.querySelector('.payment-form').appendChild(errorElem);
                     }
-                    
+
                     // Clear any existing errors
                     errorElem.innerHTML = '';
-                    
+
                     // Handle different error formats
                     if (err && err.messages) {
                         // Handle array of errors
@@ -270,25 +276,25 @@
                         pElem.style.color = "#dc3545";
                         errorElem.append(pElem);
                     }
-                    
+
                     document.getElementById('processing-message').style.display = 'none';
                     document.querySelector('.submit-button').disabled = false;
                 });
         }
 
-        exact.on("payment-complete", (payload) => {
+        csipay.on("payment-complete", (payload) => {
             console.log('Payment completed ---------------------->', payload);
             const token = payload.token || document.getElementById('token').value;
-            
+
             if (token) {
                 // Construct the URL with all required parameters
                 const confirmUrl = new URL('/tokenizationSuccess', window.location.origin);
                 confirmUrl.searchParams.append('token', token);
                 confirmUrl.searchParams.append('paymentStatus', "success");
-                
+
                 // Log the URL for debugging
                 console.log('Redirecting to:', confirmUrl.toString());
-                
+
                 // Redirect to the confirm page
                 window.location.href = confirmUrl.toString();
             } else {
@@ -298,24 +304,25 @@
             }
         });
 
-        exact.on("payment-failed", (payload) => {
+        csipay.on("payment-failed", (payload) => {
             console.log('Payment failed:', payload);
-             
+
             // Get the first error message from the errors array
             const errorMessage = payload.messages?.[0] || "Payment processing failed. Please try again.";
-            
+
             // Construct the URL with all required parameters
             const confirmUrl = new URL('/tokenizationFailure', window.location.origin);
             confirmUrl.searchParams.append('paymentStatus', 'failed');
             confirmUrl.searchParams.append('errorMessage', errorMessage);
-            
+
             // Log the URL and payload for debugging
             console.log('Payment failed payload:', payload);
             console.log('Redirecting to:', confirmUrl.toString());
-            
+
             // Redirect to the confirm page
             window.location.href = confirmUrl.toString();
         });
     </script>
 </body>
-</html> 
+
+</html>

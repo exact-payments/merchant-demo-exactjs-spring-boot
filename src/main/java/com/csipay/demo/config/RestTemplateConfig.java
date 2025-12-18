@@ -1,4 +1,4 @@
-package com.exactpay.demo.config;
+package com.csipay.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.exactpay.demo;
+package com.csipay.demo;
 
 public class OrderRequest {
 
@@ -12,15 +12,15 @@ public class OrderRequest {
     public void setPaymentFlow(String paymentFlow) {
         this.paymentFlow = paymentFlow;
     }
-    
+
     public Details getDetails() {
         return details;
     }
-    
+
     public void setDetails(Details details) {
         this.details = details;
     }
-    
+
     public OrderRequest(String paymentFlow, Details details) {
         this.paymentFlow = paymentFlow;
         this.details = details;

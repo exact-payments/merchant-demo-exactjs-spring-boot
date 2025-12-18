@@ -1,6 +1,6 @@
-package com.exactpay.demo;
+package com.csipay.demo;
 
-import com.exactpay.demo.util.JsonUtils;
+import com.csipay.demo.util.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class ReCaptchaControllerTest {
         // Create a mock Google reCAPTCHA response with failure
         Map<String, Object> googleResponse = new HashMap<>();
         googleResponse.put("success", false);
-        googleResponse.put("error-codes", new String[]{"invalid-input-response"});
+        googleResponse.put("error-codes", new String[] { "invalid-input-response" });
 
         // Convert to JSON
         String googleResponseJson = JsonUtils.toJson(googleResponse);

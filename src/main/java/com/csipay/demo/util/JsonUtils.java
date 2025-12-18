@@ -1,4 +1,4 @@
-package com.exactpay.demo.util;
+package com.csipay.demo.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -79,7 +79,8 @@ public class JsonUtils {
      * @return a Map representation of the object
      */
     public static Map<String, Object> toMap(Object object) {
-        return objectMapper.convertValue(object, new TypeReference<Map<String, Object>>() {});
+        return objectMapper.convertValue(object, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     /**

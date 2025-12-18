@@ -1,4 +1,4 @@
-package com.exactpay.demo;
+package com.csipay.demo;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PaymentController {
 
     @GetMapping("/confirmSuccess")
-    public String confirmPaymentSuccess(@RequestParam String paymentId, 
-                               @RequestParam(required = false, defaultValue = "success") String paymentStatus,
-                               @RequestParam(required = false) String errorMessage,
-                               @RequestParam(required = false) String amount,
-                               Model model) {
+    public String confirmPaymentSuccess(@RequestParam String paymentId,
+            @RequestParam(required = false, defaultValue = "success") String paymentStatus,
+            @RequestParam(required = false) String errorMessage,
+            @RequestParam(required = false) String amount,
+            Model model) {
         // Log the received parameters
         System.out.println("Confirm Payment - Parameters:");
         System.out.println("Payment ID: " + paymentId);
@@ -32,34 +32,35 @@ public class PaymentController {
 
     @GetMapping("/confirmFailure")
     public String confirmPaymentFailure(@RequestParam(required = false, defaultValue = "failed") String paymentStatus,
-                                        @RequestParam(required = false) String errorMessage,
-                                        Model model) {
-        
+            @RequestParam(required = false) String errorMessage,
+            Model model) {
+
         System.out.println("Confirm Payment - Parameters:");
-                                            
+
         System.out.println("Payment Status: " + paymentStatus);
-        System.out.println("Error Message: " + errorMessage);                                    model.addAttribute("paymentStatus", paymentStatus);
+        System.out.println("Error Message: " + errorMessage);
+        model.addAttribute("paymentStatus", paymentStatus);
         model.addAttribute("errorMessage", errorMessage);
         return "confirmFail";
 
     }
 
     @GetMapping("/tokenizationSuccess")
-    public String tokenizationSuccess(@RequestParam String token, 
-                                      @RequestParam(required = false, defaultValue = "failed") String paymentStatus,
-                                      Model model) {
-        System.out.println("Token: "+token);
+    public String tokenizationSuccess(@RequestParam String token,
+            @RequestParam(required = false, defaultValue = "failed") String paymentStatus,
+            Model model) {
+        System.out.println("Token: " + token);
         model.addAttribute("token", token);
         model.addAttribute("paymentStatus", paymentStatus);
         return "tokenizationSuccess";
     }
 
     @GetMapping("/tokenizationFailure")
-    public String tokenizationFailure( @RequestParam(required = false) String errorMessage, 
-                                      @RequestParam(required = false, defaultValue = "failed") String paymentStatus,
-                                      Model model) {
+    public String tokenizationFailure(@RequestParam(required = false) String errorMessage,
+            @RequestParam(required = false, defaultValue = "failed") String paymentStatus,
+            Model model) {
         model.addAttribute("paymentStatus", paymentStatus);
         model.addAttribute("errorMessage", errorMessage);
         return "tokenizationFail";
     }
-} 
+}
