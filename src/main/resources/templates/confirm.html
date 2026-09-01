@@ -13,7 +13,7 @@
         }
 
         .confirmation-container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 30px;
             background-color: white;
@@ -109,9 +109,11 @@
             <p><strong>Payment ID:</strong> <span th:text="${paymentId}"></span></p>
             <p><strong>Amount:</strong> <span th:text="${amount}"></span></p>
             <p><strong>Status:</strong> <span th:text="${paymentStatus}"></span></p>
+            <p th:if="${token != null}"><strong>Token:</strong> <span th:text="${token}"></span></p>
         </div>
 
-        <a href="/" class="back-button">Return to Home</a>
+        <div th:replace="~{fragments/orderDebug :: panel}"></div>
+        <a href="/" class="back-button">Back to Flow Test Hub</a>
     </div>
 </body>
 </html>

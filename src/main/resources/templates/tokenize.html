@@ -163,6 +163,31 @@
         var terminalId = /*[[${terminalId}]]*/ '';
         var enableRecaptcha = /*[[${enableRecaptcha}]]*/ false;
         var recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ '';
+        var orderRequestJson = /*[[${requestJson}]]*/ '';
+        var orderResponseJson = /*[[${responseJson}]]*/ '';
+        var orderUrl = /*[[${orderUrl}]]*/ '';
+        var processUrl = /*[[${processUrl}]]*/ '';
+
+        // Carried to the success/failure page, which has no server-side copy of these.
+        function stashDebug(key, value) {
+            try {
+                sessionStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('sessionStorage unavailable:', e);
+            }
+        }
+
+        stashDebug('csipay.orderDebug', JSON.stringify({
+            request: orderRequestJson,
+            response: orderResponseJson,
+            orderUrl: orderUrl,
+            processUrl: processUrl
+        }));
+
+        function stashProcessResult(event, payload) {
+            stashDebug('csipay.processEvent', event);
+            stashDebug('csipay.processDebug', JSON.stringify(payload, null, 2));
+        }
 
         // Initialize payment component
         const csipay = CSIPayJS(accessToken);
@@ -284,6 +309,7 @@
 
         csipay.on("payment-complete", (payload) => {
             console.log('Payment completed ---------------------->', payload);
+            stashProcessResult('payment-complete', payload);
             const token = payload.token || document.getElementById('token').value;
 
             if (token) {
@@ -306,6 +332,7 @@
 
         csipay.on("payment-failed", (payload) => {
             console.log('Payment failed:', payload);
+            stashProcessResult('payment-failed', payload);
 
             // Get the first error message from the errors array
             const errorMessage = payload.messages?.[0] || "Payment processing failed. Please try again.";

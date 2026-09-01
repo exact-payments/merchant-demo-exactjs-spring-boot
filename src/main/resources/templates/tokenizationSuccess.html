@@ -13,7 +13,7 @@
         }
 
         .confirmation-container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 30px;
             background-color: white;
@@ -98,7 +98,8 @@
             <p><strong>Token:</strong> <span th:text="${token}"></span></p>
         </div>
 
-        <a href="/" class="back-button">Return to Home</a>
+        <div th:replace="~{fragments/orderDebug :: panel}"></div>
+        <a href="/" class="back-button">Back to Flow Test Hub</a>
     </div>
 </body>
 </html>

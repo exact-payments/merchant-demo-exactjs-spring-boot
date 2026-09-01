@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <!--
+      Renders the order create request/response and the processOrder result carried
+      over from the payment page via sessionStorage. Include on any result page:
+      <div th:replace="~{fragments/orderDebug :: panel}"></div>
+    -->
+    <div th:fragment="panel">
+        <style>
+            .order-debug {
+                text-align: left;
+                font-size: 12px;
+                margin: 24px 0 0;
+                color: #5E6977;
+            }
+
+            .order-debug summary {
+                cursor: pointer;
+                font-size: 13px;
+            }
+
+            .order-debug .debug-label {
+                font-weight: 600;
+                margin: 8px 0 4px;
+                word-break: break-all;
+            }
+
+            .order-debug pre {
+                background: #f5f6f8;
+                border-radius: 4px;
+                padding: 12px;
+                margin: 0 0 12px;
+                overflow-x: auto;
+                white-space: pre;
+                line-height: 1.5;
+            }
+        </style>
+
+        <details class="order-debug" id="orderDebugPanel" style="display: none;" open>
+            <summary>Order request / response</summary>
+            <div id="orderDebugBody"></div>
+        </details>
+
+        <script>
+            (function renderOrderDebug() {
+                var panel = document.getElementById('orderDebugPanel');
+                var body = document.getElementById('orderDebugBody');
+                if (!panel || !body) {
+                    return;
+                }
+
+                function read(key) {
+                    try {
+                        return sessionStorage.getItem(key);
+                    } catch (e) {
+                        return null;
+                    }
+                }
+
+                function section(label, text) {
+                    if (!text) {
+                        return;
+                    }
+                    var h = document.createElement('p');
+                    h.className = 'debug-label';
+                    h.textContent = label;
+                    var pre = document.createElement('pre');
+                    pre.textContent = text;
+                    body.appendChild(h);
+                    body.appendChild(pre);
+                }
+
+                var processUrl = '';
+                var order = read('csipay.orderDebug');
+                if (order) {
+                    try {
+                        var parsed = JSON.parse(order);
+                        processUrl = parsed.processUrl || '';
+                        section('POST ' + (parsed.orderUrl || '/orders'), parsed.request);
+                        section('Response', parsed.response);
+                    } catch (e) {
+                        section('POST /orders', order);
+                    }
+                }
+
+                var processLabel = 'POST ' + (processUrl || '/orders/:orderId/process')
+                    + '  \u2014  processOrder result (' + (read('csipay.processEvent') || 'event') + ')';
+                section(processLabel, read('csipay.processDebug'));
+
+                if (body.childNodes.length) {
+                    panel.style.display = '';
+                }
+            })();
+        </script>
+    </div>
+</body>
+
+</html>

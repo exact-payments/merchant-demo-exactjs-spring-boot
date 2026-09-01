@@ -11,7 +11,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @Controller
 public class HomeController {
 
-    @GetMapping("/")
+    @GetMapping("/shop")
     public String home(Model model) {
         model.addAttribute("greeting", "Hello, World!");
         return "index";

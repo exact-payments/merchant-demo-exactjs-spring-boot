@@ -22,7 +22,7 @@
         }
 
         .payment-container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 30px;
             background-color: white;
@@ -66,6 +66,17 @@
         .order-total strong {
             display: block;
             margin-top: 10px;
+        }
+
+        .order-meta {
+            font-size: 15px;
+            margin: 0;
+            color: #5E6977;
+        }
+
+        .order-meta strong {
+            display: inline;
+            margin-top: 0;
         }
 
         .amount-breakdown {
@@ -164,6 +175,34 @@
             margin: 10px 0;
             display: none;
         }
+
+        .order-debug {
+            text-align: left;
+            font-size: 12px;
+            margin: 0 0 16px;
+            color: #5e6977;
+        }
+
+        .order-debug summary {
+            cursor: pointer;
+        }
+
+        .order-debug pre {
+            background: #f5f6f8;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 0 0 12px;
+            overflow-x: auto;
+            /* keep the indentation intact; long JWTs scroll instead of wrapping */
+            white-space: pre;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .order-debug .debug-label {
+            font-weight: 600;
+            margin: 8px 0 4px;
+        }
     </style>
 </head>
 
@@ -173,7 +212,19 @@
             <h1 class="demo-notice">Demonstration Only</h1>
             <h2 class="demo-subtitle">Payments are simulated and no actual funds are transferred.</h2>
             <p class="order-total">Your Order Amount is: <strong th:text="${amount}"></strong></p>
+            <p class="order-total order-meta" th:if="${paymentFlow != null}">
+                Flow: <strong th:text="${paymentFlow}"></strong>
+                <span th:if="${orderStatus != null}"> &middot; <span th:text="${orderStatus}"></span></span>
+            </p>
         </div>
+
+        <details class="order-debug" th:if="${requestJson != null}">
+            <summary>Order request / response</summary>
+            <p class="debug-label">POST /orders</p>
+            <pre th:text="${requestJson}"></pre>
+            <p class="debug-label">Response</p>
+            <pre th:text="${responseJson}"></pre>
+        </details>
 
         <form id="myForm" action="your_form_url" method="post" class="payment-form">
             <div class="form-group">
@@ -209,6 +260,32 @@
         var orderId = /*[[${orderid}]]*/ '';
         var enableRecaptcha = /*[[${enableRecaptcha}]]*/ false;
         var recaptchaSiteKey = /*[[${recaptchaSiteKey}]]*/ '';
+        var paymentFlow = /*[[${paymentFlow}]]*/ 'sale';
+        var orderRequestJson = /*[[${requestJson}]]*/ '';
+        var orderResponseJson = /*[[${responseJson}]]*/ '';
+        var orderUrl = /*[[${orderUrl}]]*/ '';
+        var processUrl = /*[[${processUrl}]]*/ '';
+
+        // Carried to the success/failure page, which has no server-side copy of these.
+        function stashDebug(key, value) {
+            try {
+                sessionStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('sessionStorage unavailable:', e);
+            }
+        }
+
+        stashDebug('csipay.orderDebug', JSON.stringify({
+            request: orderRequestJson,
+            response: orderResponseJson,
+            orderUrl: orderUrl,
+            processUrl: processUrl
+        }));
+
+        function stashProcessResult(event, payload) {
+            stashDebug('csipay.processEvent', event);
+            stashDebug('csipay.processDebug', JSON.stringify(payload, null, 2));
+        }
         // Default surcharge is 0
         let surcharge = 0;
 
@@ -320,7 +397,13 @@
         });
 
         function processPayment(form) {
-            csipay.processOrder(surcharge)
+            // processOrder is not promise-returning in every csi_pay.js build; when it
+            // returns undefined the outcome arrives via the payment-complete/failed events.
+            const pending = csipay.processOrder(surcharge);
+            if (!pending || typeof pending.catch !== 'function') {
+                return;
+            }
+            pending
                 .catch(err => {
                     console.error('Payment processing error:', err);
                     const errorElem = document.getElementById("errors") || document.createElement("div");
@@ -362,6 +445,19 @@
 
         csipay.on("payment-complete", (payload) => {
             console.log('Payment completed ---------------------->', payload);
+            stashProcessResult('payment-complete', payload);
+
+            const generatedToken = payload.token || payload.generatedToken;
+
+            // The tokenize flow charges nothing, so it returns a token and no paymentId.
+            if (paymentFlow === 'tokenize') {
+                const tokenUrl = new URL('/tokenizationSuccess', window.location.origin);
+                tokenUrl.searchParams.append('token', generatedToken || '');
+                tokenUrl.searchParams.append('paymentStatus', 'success');
+                window.location.href = tokenUrl.toString();
+                return;
+            }
+
             const paymentId = payload.paymentId || document.getElementById('payment_id').value;
             const baseAmount = document.getElementById('amount').value;
 
@@ -381,6 +477,11 @@
                 confirmUrl.searchParams.append('paymentStatus', 'success');
                 confirmUrl.searchParams.append('amount', totalAmount.toFixed(2));
 
+                // Populated by the *-and-tokenize flows; absent for plain sale/authorize.
+                if (generatedToken) {
+                    confirmUrl.searchParams.append('token', generatedToken);
+                }
+
                 // Log the URL for debugging
                 console.log('Redirecting to:', confirmUrl.toString());
 
@@ -395,6 +496,7 @@
 
         csipay.on("payment-failed", (payload) => {
             console.log('Payment failed:', payload);
+            stashProcessResult('payment-failed', payload);
 
             // Get the first error message from the errors array
             const errorMessage = payload.messages?.[0] || "Payment processing failed. Please try again.";
@@ -469,6 +571,12 @@
         function calculateSurcharge(payload) {
             // Log the payload for debugging
             console.log('Calculating surcharge for payload:', payload);
+
+            // Nothing is charged on a tokenize order, so a surcharge is meaningless.
+            if (paymentFlow === 'tokenize') {
+                surcharge = 0;
+                return surcharge;
+            }
 
 
 

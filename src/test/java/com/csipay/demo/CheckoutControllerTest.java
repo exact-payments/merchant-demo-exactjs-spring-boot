@@ -49,7 +49,7 @@ public class CheckoutControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/checkout")
                 .param("amountStr", "1050"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.model().attribute("amount", "$10.5"));
+                .andExpect(MockMvcResultMatchers.model().attribute("amount", "$10.50"));
 
         // Test with another decimal amount (99 cents = $0.99)
         mockMvc.perform(MockMvcRequestBuilders.get("/checkout")

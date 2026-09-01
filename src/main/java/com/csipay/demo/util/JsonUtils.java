@@ -73,6 +73,36 @@ public class JsonUtils {
     }
 
     /**
+     * Convert an object to an indented JSON string.
+     *
+     * @param object the object to convert
+     * @return pretty-printed JSON
+     * @throws JsonProcessingException if conversion fails
+     */
+    public static String toPrettyJson(Object object) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+    }
+
+    /**
+     * Re-indent an existing JSON string. Returns the input unchanged if it
+     * cannot be parsed, so callers can display raw error bodies safely.
+     *
+     * @param json the JSON string
+     * @return pretty-printed JSON, or the original string
+     */
+    public static String prettyPrint(String json) {
+        if (json == null || json.isBlank()) {
+            return json;
+        }
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(objectMapper.readTree(json));
+        } catch (JsonProcessingException e) {
+            return json;
+        }
+    }
+
+    /**
      * Convert an object to a Map.
      *
      * @param object the object to convert

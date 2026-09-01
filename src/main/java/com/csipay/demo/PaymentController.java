@@ -13,6 +13,7 @@ public class PaymentController {
             @RequestParam(required = false, defaultValue = "success") String paymentStatus,
             @RequestParam(required = false) String errorMessage,
             @RequestParam(required = false) String amount,
+            @RequestParam(required = false) String token,
             Model model) {
         // Log the received parameters
         System.out.println("Confirm Payment - Parameters:");
@@ -20,12 +21,14 @@ public class PaymentController {
         System.out.println("Payment Status: " + paymentStatus);
         System.out.println("Amount: " + amount);
         System.out.println("Error Message: " + errorMessage);
+        System.out.println("Generated Token: " + token);
 
         // Add parameters to the model
         model.addAttribute("paymentId", paymentId);
         model.addAttribute("paymentStatus", paymentStatus);
         model.addAttribute("errorMessage", errorMessage);
         model.addAttribute("amount", amount != null ? amount : "0.00");
+        model.addAttribute("token", token);
 
         return "confirm";
     }

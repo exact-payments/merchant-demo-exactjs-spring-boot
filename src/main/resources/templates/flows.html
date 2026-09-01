@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Order Flow Test Hub</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f5f6f8;
+            color: #22262b;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .hub {
+            max-width: 720px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+        }
+
+        h1 {
+            margin: 0 0 4px;
+            font-size: 24px;
+        }
+
+        .env {
+            color: #5e6977;
+            font-size: 13px;
+            margin-bottom: 24px;
+            word-break: break-all;
+        }
+
+        fieldset {
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            margin: 0 0 20px;
+            padding: 16px;
+        }
+
+        legend {
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #5e6977;
+            padding: 0 6px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        input[type=text],
+        input[type=number],
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccd1d6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .hint {
+            color: #5e6977;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        button {
+            background: #000;
+            color: #fff;
+            border: 0;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        .amount-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .amount-row input {
+            margin-top: 0;
+        }
+
+        .secondary-button {
+            background: #fff;
+            color: #22262b;
+            border: 1px solid #ccd1d6;
+            border-radius: 4px;
+            padding: 8px 14px;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .secondary-button:hover {
+            background: #f0f2f4;
+        }
+
+        a.back {
+            display: inline-block;
+            margin-left: 16px;
+            color: #5e6977;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hub">
+        <h1>Order Flow Test Hub</h1>
+        <p class="env">
+            API: <span th:text="${csipayUrl}"></span><br>
+            Default terminal: <span th:text="${terminalId}"></span>
+        </p>
+
+        <form action="/checkout" method="get">
+            <fieldset>
+                <legend>Order</legend>
+                <label>paymentFlow
+                    <select name="paymentFlow">
+                        <option th:each="f : ${paymentFlows}" th:value="${f}" th:text="${f}"
+                            th:selected="${f == defaultPaymentFlow}"></option>
+                    </select>
+                </label>
+                <label>totalAmount
+                    <span class="amount-row">
+                        <input type="number" name="amountStr" id="amountStr" value="2500" min="0" required>
+                        <button type="button" id="randomAmount" class="secondary-button">Randomize</button>
+                    </span>
+                    <span class="hint">Minor units (2500 = $25.00). Use 0 for the tokenize flow.
+                        Randomize picks $50.00&ndash;$150.00.</span>
+                </label>
+                <label>terminalId
+                    <input type="text" name="terminalId" th:value="${terminalId}">
+                    <span class="hint">Blank uses account.terminalId from configuration.</span>
+                </label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Optional details params</legend>
+                <label>feeAmount
+                    <input type="number" name="feeAmount" placeholder="omitted" min="0">
+                    <span class="hint">Blank omits the field entirely so Pyxis applies its default.</span>
+                </label>
+            </fieldset>
+
+            <button type="submit">Create order &amp; open payment page</button>
+            <a class="back" href="/shop">Plant shop demo</a>
+            <a class="back" href="/tokenize">Standalone /tokenize page</a>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('randomAmount').addEventListener('click', function () {
+            // Inclusive 5000-15000 minor units.
+            var amount = Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000;
+            document.getElementById('amountStr').value = amount;
+        });
+    </script>
+</body>
+
+</html>

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/tokenize")
@@ -54,8 +55,9 @@ public class TokenizeController {
             OrderRequest orderRequest = new OrderRequest("tokenize", details);
 
             // Use ObjectMapper to convert the request to JSON string for logging
+            String requestJson = "";
             try {
-                String requestJson = JsonUtils.toJson(orderRequest);
+                requestJson = JsonUtils.toPrettyJson(orderRequest);
                 System.out.println("Request JSON: " + requestJson);
             } catch (JsonProcessingException e) {
                 System.err.println("Error serializing request: " + e.getMessage());
@@ -89,7 +91,12 @@ public class TokenizeController {
 
                 model.addAttribute("orderid", order.getOrderId());
                 model.addAttribute("accesstoken", accessToken);
-                model.addAttribute("amount", "$" + (amount / 100.0));
+                model.addAttribute("amount", String.format(Locale.US, "$%,.2f", amount / 100.0));
+
+                model.addAttribute("orderUrl", url);
+                model.addAttribute("processUrl", csipayUrl + "orders/" + order.getOrderId() + "/process");
+                model.addAttribute("requestJson", requestJson);
+                model.addAttribute("responseJson", JsonUtils.prettyPrint(responseEntity.getBody()));
 
                 // Add reCAPTCHA configuration to the model
                 model.addAttribute("enableRecaptcha", recaptchaEnabled);
